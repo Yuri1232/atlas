@@ -93,7 +93,7 @@ const Loader = () => {
     transform: [{ rotate: `${r.value}deg` }],
   }));
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: "white" }}>
       <Globe
         style={[animatedStyle]}
         source={require("@/assets/images/globe.png")}

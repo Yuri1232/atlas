@@ -14,6 +14,8 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Provider, useSelector } from "react-redux";
 import store from "@/states/store";
 import React from "react";
+import { BlurView } from "expo-blur";
+import { Colors } from "@/constants/Colors";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -43,8 +45,16 @@ export default function RootLayout() {
             name="productDetail/[id]"
             options={({ route }) => {
               return {
-                headerTitle: route.params.headerTitle,
-                headerTransparent: true,
+                headerTransparent: true, // Keep transparency
+                headerBlurEffect: "systemChromeMaterialLight", // Apply blur effect
+                headerBackground: () => (
+                  <BlurView
+                    intensity={100}
+                    tint="systemChromeMaterialLight"
+                    style={{ flex: 1 }}
+                  />
+                ),
+                headerTintColor: "black", // Blurred background
               };
             }}
           />

@@ -50,6 +50,8 @@ const HomeScreen: React.FC = () => {
   const [stream, setStream] = useState([]);
   const [discountProduct, setDiscountProduct] = useState([]);
   const [products, setProducts] = useState([]);
+  const [innerProducts, setInnerProducts] = useState([]);
+  const [mergedProducts, setMergedProducts] = useState([]);
 
   useEffect(() => {
     dispatch(homeAction(locale));
@@ -58,7 +60,9 @@ const HomeScreen: React.FC = () => {
 
   useEffect(() => {
     if (pStatus === "succeeded" && pData) {
-      setProducts(pData.data.map((item) => item.attributes));
+      const allProducts = pData.data.map((item) => item.attributes); // Merges all product arrays
+
+      setProducts(allProducts);
     }
   }, [pStatus, pData]);
 
@@ -166,14 +170,14 @@ const HomeScreen: React.FC = () => {
                 status={status}
                 style={{ marginBottom: 32 }}
               />
-              <Category data={data} style={{ marginBottom: 32 }} />
+              {/* <Category data={data} style={{ marginBottom: 32 }} />
               {discountProduct.length > 0 && (
                 <Card
                   data={discountProduct}
                   isDiscount={true}
                   style={{ marginBottom: 32 }} // Add gap for the discount card
                 />
-              )}
+              )} */}
             </>
           )}
           contentContainerStyle={{

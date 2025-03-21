@@ -14,6 +14,7 @@ export const Colors = {
     background: "#FAF9F6",
     lightRed: "#FF7F7F",
     tabBar: "#F9F6EE",
+    lightGray: "#ECECEC",
   },
   dark: {
     blue: "#1560bd",

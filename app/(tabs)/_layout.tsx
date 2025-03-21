@@ -3,6 +3,7 @@ import React from "react";
 import { View } from "react-native";
 import { HapticTab } from "@/components/HapticTab";
 import CurvedTabBarBackground from "@/components/CurvedTabBar";
+import "react-native-gesture-handler";
 import {
   LucideHome,
   LucideShoppingCart,

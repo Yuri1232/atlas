@@ -1,66 +1,78 @@
-import React, { useState } from "react";
-import { FlatList, I18nManager, TouchableOpacity, View } from "react-native";
-import { ThemedText } from "../ThemedText";
-import styled from "styled-components";
-import { Colors } from "@/constants/Colors";
+import React, { useState, useEffect, useCallback } from "react";
+import { FlatList, I18nManager, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { colorSetter } from "@/states/ui";
+import RenderFeature from "./RenderSpecs";
+import SpecsTitle from "./SpecsTitle";
+import { router, useLocalSearchParams } from "expo-router";
 
-const data = ["red", "blue", "red", "Black red"];
-const Wrapper = styled(View)`
-  justify-content: center;
-  algin-items: center;
-  flex-direction: row;
-  gap: 5px;
-  border-radius: 10px;
-  background-color: ${Colors.light.border};
-  padding: 5px 8px 5px 8px;
-  border-width: 1px;
-`;
-const DisplayColor = styled(View)`
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 1px solid black;
-`;
-const RenderColors = ({ item, index, onSelect, handleSelect }) => {
-  return (
-    <TouchableOpacity onPress={() => handleSelect(item)}>
-      <Wrapper
-        style={{
-          borderColor:
-            onSelect === item ? Colors.light.lightRed : "transparent",
-        }}
-      >
-        <DisplayColor style={{ backgroundColor: item.toLowerCase() }} />
-        <ThemedText type="subtitle">{item}</ThemedText>
-      </Wrapper>
-    </TouchableOpacity>
-  );
-};
-
-const Color = () => {
+const Color = ({
+  data = [],
+  defaultColor = "",
+}: {
+  data: string[];
+  defaultColor: string;
+}) => {
   const isRTL = I18nManager.isRTL;
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const dispatch = useDispatch();
+  const { pData } = useSelector((state) => state.products);
+  const param = useLocalSearchParams();
+  const slug = param.id.toString();
 
-  const handleSelect = (color: string) => {
-    setSelectedColor(color);
-  };
-  console.log(selectedColor);
+  // Set the first color as the default selection
+  const [selectedColor, setSelectedColor] = useState<string | null>("");
+
+  // Dispatch default color on mount
+  useEffect(() => {
+    setSelectedColor(defaultColor);
+    dispatch(colorSetter(defaultColor));
+  }, []);
+
+  // Handle color selection
+  const handleSelect = useCallback(
+    (color: string) => {
+      if (selectedColor === color) return;
+
+      setSelectedColor(color);
+      requestAnimationFrame(() => dispatch(colorSetter(color)));
+
+      if (!pData?.data) return;
+
+      const selectedProduct = pData.data.find((item) => param.color === color);
+
+      if (selectedProduct) {
+        router.push({
+          pathname: `/productDetail/${selectedProduct.attributes.slug}`,
+          params: {
+            headerTitle: selectedProduct.attributes.name,
+            price: selectedProduct.attributes.price,
+            discount: selectedProduct.attributes.discount,
+          },
+        });
+      }
+    },
+    [selectedColor, dispatch, pData]
+  );
+
   return (
-    <View>
-      <ThemedText>{isRTL ? "اللون" : "color"}</ThemedText>
+    <View style={{ gap: 2 }}>
+      {data.length > 0 && <SpecsTitle>{isRTL ? "لون" : "Color"}</SpecsTitle>}
       <FlatList
         horizontal
         inverted={isRTL}
         contentContainerStyle={{ gap: 20 }}
-        data={data}
+        data={[...new Set(data)]}
+        keyExtractor={(item) => item}
         renderItem={({ item, index }) => (
-          <RenderColors
+          <RenderFeature
             item={item}
             index={index}
             handleSelect={handleSelect}
             onSelect={selectedColor}
+            isColor
           />
         )}
+        extraData={selectedColor} // Prevent unnecessary re-renders
       />
     </View>
   );

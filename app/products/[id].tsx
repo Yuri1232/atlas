@@ -43,7 +43,7 @@ const Products = () => {
 
   useEffect(() => {
     if (pStatus === "succeeded" && pData) {
-      const card = pData.data.map((item) => item.attributes);
+      const card = pData.data.map((item) => item.attributes.product);
 
       if (isOffer) {
         setCard(card.filter((item) => item.discount === true));

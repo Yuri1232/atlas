@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Text,
@@ -52,6 +52,7 @@ const CardWrap = styled(MotiView)`
   align-items: center;
   background: white;
   width: 150px;
+  height: 100%;
   overflow: hidden;
   gap: 5px;
   position: relative;
@@ -68,7 +69,7 @@ export const TitleWrapper = styled(View)`
   margin-bottom: 5px;
 `;
 
-const PriceHandler = ({
+export const PriceHandler = ({
   isDiscount,
   item,
 }: {
@@ -106,10 +107,11 @@ export const CardRender = ({ item, index }: { item: Item; index: number }) => {
 
   useEffect(() => {
     if (item) {
-      setPhoto(process.env.EXPO_PUBLIC_BASE + item.image?.data.attributes?.url);
+      setPhoto(
+        process.env.EXPO_PUBLIC_BASE + item.image?.data[0].attributes.url
+      );
     }
   }, [item]);
-
   return (
     <CardWrap
       from={{ opacity: 0 }}
@@ -169,7 +171,14 @@ export const CardRender = ({ item, index }: { item: Item; index: number }) => {
           source={{ uri: photo }}
         />
       </View>
-      <View style={{ flex: 1, width: "100%", paddingHorizontal: 10 }}>
+      <View
+        style={{
+          flex: 1,
+          width: "100%",
+          paddingHorizontal: 10,
+          gap: 5,
+        }}
+      >
         <ThemedText numberOfLines={2} style={{ flex: 1 }} type="subtitle">
           {item.name}
         </ThemedText>
@@ -200,12 +209,32 @@ const Card = ({ data, style, cat, isDiscount }: CardProps) => {
         setStream(data);
       } else {
         const filteredResult = data.filter(
-          (item: Item) => item.category === cat
+          (item: Item) => item?.category === cat
         );
         setStream(filteredResult);
       }
     }
   }, [data]);
+  useEffect(() => {
+    // Prefetching is not supported, so this effect is removed
+  }, []);
+  const handlePress = useCallback(
+    (item: Item) => {
+      console.log("Navigating to", item.slug);
+      router.push({
+        pathname: `/productDetail/${item.slug}`,
+        params: {
+          headerTitle: item.name,
+          price: item.price,
+          discount: item.discount_price,
+          color: item.features.color,
+          ram: item.features.ram,
+          storage: item.features.storage,
+        },
+      });
+    },
+    [router]
+  );
 
   return (
     <Wrapper>
@@ -245,14 +274,7 @@ const Card = ({ data, style, cat, isDiscount }: CardProps) => {
         data={stream}
         renderItem={({ item, index }) => {
           return (
-            <TouchableOpacity
-              onPress={() => {
-                router.push({
-                  pathname: `/productDetail/${index}`,
-                  params: { headerTitle: item.name },
-                });
-              }}
-            >
+            <TouchableOpacity onPress={() => handlePress(item)}>
               <CardRender key={item.id} item={item} index={index} />
             </TouchableOpacity>
           );
