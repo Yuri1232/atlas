@@ -20,6 +20,7 @@ import { RenderItem } from "@/components/SearchFilter";
 import CategoryView from "@/components/CategoryView";
 import Loader from "@/components/ui/Loader";
 import globalStyles from "@/components/globalStyles";
+import CustomHeader from "@/components/ui/CustomHeader";
 
 const Products = () => {
   const param = useLocalSearchParams();
@@ -40,10 +41,9 @@ const Products = () => {
     dispatch(productAction(locale));
     dispatch(homeAction(locale));
   }, []);
-
   useEffect(() => {
     if (pStatus === "succeeded" && pData) {
-      const card = pData.data.map((item) => item.attributes.product);
+      const card = pData.data.map((item) => item.attributes);
 
       if (isOffer) {
         setCard(card.filter((item) => item.discount === true));
@@ -68,35 +68,38 @@ const Products = () => {
     return <Loader />;
   } else {
     return (
-      <SafeAreaView style={globalStyles.global}>
-        <FlatList
-          style={{ position: "relative", zIndex: 1111 }}
-          data={adjustedItems}
-          keyExtractor={(item) => item.category}
-          numColumns={numColumns}
-          contentContainerStyle={{
-            paddingVertical: 30,
-            marginHorizontal: 25,
-          }}
-          columnWrapperStyle={{
-            justifyContent: "center",
-            marginBottom: 30,
-            gap: 40,
-          }} // Add space between columns
-          renderItem={({ item, index }) => {
-            if (isCat) {
-              return <CategoryView item={item} />;
-            } else {
-              return <RenderItem item={item} index={index} />;
-            }
-          }}
-          contentContainerStyle={{
-            paddingBottom: 100,
-            paddingTop: 50,
-            paddingHorizontal: 15,
-          }}
-        />
-      </SafeAreaView>
+      <>
+        <CustomHeader title={param.id} />
+        <SafeAreaView style={globalStyles.global}>
+          <FlatList
+            style={{ position: "relative", zIndex: 1111 }}
+            data={adjustedItems}
+            keyExtractor={(item) => item.slug}
+            numColumns={numColumns}
+            contentContainerStyle={{
+              paddingVertical: 30,
+              marginHorizontal: 25,
+            }}
+            columnWrapperStyle={{
+              justifyContent: "center",
+              marginBottom: 10,
+              gap: 40,
+            }} // Add space between columns
+            renderItem={({ item, index }) => {
+              if (isCat) {
+                return <CategoryView item={item} />;
+              } else {
+                return <RenderItem item={item} index={index} />;
+              }
+            }}
+            contentContainerStyle={{
+              paddingBottom: 100,
+              paddingTop: 50,
+              paddingHorizontal: 15,
+            }}
+          />
+        </SafeAreaView>
+      </>
     );
   }
 };

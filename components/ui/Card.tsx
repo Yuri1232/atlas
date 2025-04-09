@@ -52,7 +52,7 @@ const CardWrap = styled(MotiView)`
   align-items: center;
   background: white;
   width: 150px;
-  height: 100%;
+
   overflow: hidden;
   gap: 5px;
   position: relative;
@@ -62,7 +62,7 @@ const Price = styled(ThemedText)`
   color: ${Colors.dark.price};
 `;
 
-export const TitleWrapper = styled(View)`
+const TitleWrapper = styled(View)`
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
@@ -102,7 +102,15 @@ export const PriceHandler = ({
   return <Price type="title">{item.price}</Price>;
 };
 
-export const CardRender = ({ item, index }: { item: Item; index: number }) => {
+export const CardRender = ({
+  item,
+  index,
+  isHorzontal = true,
+}: {
+  item: Item;
+  index: number;
+  isHorzontal: boolean;
+}) => {
   const [photo, setPhoto] = useState<string>("");
 
   useEffect(() => {
@@ -120,7 +128,7 @@ export const CardRender = ({ item, index }: { item: Item; index: number }) => {
         type: "timing",
         delay: index * 100,
       }}
-      style={styles.box}
+      style={[styles.box, { height: isHorzontal ? "100%" : "auto" }]}
       key={index}
     >
       <View style={{ width: "100%" }}>
@@ -220,7 +228,6 @@ const Card = ({ data, style, cat, isDiscount }: CardProps) => {
   }, []);
   const handlePress = useCallback(
     (item: Item) => {
-      console.log("Navigating to", item.slug);
       router.push({
         pathname: `/productDetail/${item.slug}`,
         params: {

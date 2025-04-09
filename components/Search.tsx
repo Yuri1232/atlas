@@ -1,60 +1,56 @@
 import {
-  Text,
   View,
   TextInput,
   TouchableOpacity,
   I18nManager,
+  Platform,
 } from "react-native";
-import Feather from "@expo/vector-icons/Feather";
+import { Ionicons } from "@expo/vector-icons";
 import styled from "styled-components/native";
-
 import { Colors } from "@/constants/Colors";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { Search, X } from "lucide-react-native";
+import { Search } from "lucide-react-native";
 import SearchFilter from "./SearchFilter";
-import { slides } from "@/util/dummy";
 import { useEffect, useRef, useState } from "react";
 import React from "react";
 import { ThemedText } from "./ThemedText";
+import { MotiView } from "moti";
+import { BlurView } from "expo-blur";
 
-const BaseWrapper = styled(View)`
-  flex-direction: ${I18nManager.isRTL ? "row-reverse" : "row"};
-  justify-content: space-between;
+const Wrapper = styled(View)`
+  flex-direction: row;
   align-items: center;
-  border: 1px solid ${Colors.light.border};
+  background-color: #f5f5f5;
   border-radius: 8px;
-  padding: 0 10px;
-  min-height: 50px;
-  max-height: 120px;
+  padding: 0 12px;
+  height: 40px;
 `;
 
-// Extended Wrapper components
-const Wrapper = styled(BaseWrapper)`
-  margin: 0 15px;
-`;
-
-const WrapperClose = styled(BaseWrapper)`
-  margin: 0;
-`;
-const TextField = styled(Text)`
+const SearchInput = styled(TextInput)`
   flex: 1;
-  padding: 0 ${I18nManager.isRTL ? "10px" : "0px"} 0
-    ${I18nManager.isRTL ? "10px" : "0px"};
-  color: ${Colors.light.placeholder};
+  padding: 0 8px;
+  color: #1a1a1a;
+  font-size: 15px;
+  font-family: "Regular";
+  text-align: ${I18nManager.isRTL ? "right" : "left"};
 `;
 
-const SearchIcon = styled(Feather)`
-  color: ${Colors.dark.icon};
+const SearchButton = styled(TouchableOpacity)`
+  width: 32px;
+  height: 32px;
+  justify-content: center;
+  align-items: center;
 `;
 
-const FilterIcon = styled(Ionicons)`
-  color: ${Colors.dark.blue};
+const PlaceholderText = styled(ThemedText)`
+  color: #999;
+  font-size: 16px;
+  font-family: "Regular";
 `;
 
 export const SearchOpen = ({ data, style, onPress, isSearch }) => {
-  const [input, setInput] = useState(""); // State to track the raw input
-  const [stream, setStream] = useState<Item[]>([]);
-  const focus = useRef<TextInput>(null);
+  const [input, setInput] = useState("");
+  const [stream, setStream] = useState([]);
+  const focus = useRef(null);
 
   useEffect(() => {
     if (data) {
@@ -63,50 +59,30 @@ export const SearchOpen = ({ data, style, onPress, isSearch }) => {
   }, []);
 
   useEffect(() => {
-    if (focus.current) {
+    if (focus.current && isSearch) {
       focus.current.focus();
     }
   }, [isSearch]);
 
-  // Log to check if the input is changing twice
-
   return (
     <>
-      <Wrapper style={style}>
-        <X onPress={onPress} size={24} color="black" />
-        <TextInput
+      <Wrapper>
+        <SearchInput
           ref={focus}
-          style={{
-            flex: 1,
-            paddingLeft: 10,
-            paddingRight: I18nManager.isRTL ? 10 : 0,
-            textAlign: I18nManager.isRTL ? "right" : "left",
-          }}
           value={input}
           placeholder={
-            I18nManager.isRTL ? "البحث عن المنتجات " : "Search for products"
+            I18nManager.isRTL ? "البحث عن المنتجات" : "Search for products"
           }
-          onChangeText={(input) => setInput(input)}
+          placeholderTextColor="#999"
+          onChangeText={setInput}
         />
-        <SearchIcon name="search" size={24} color="black" />
+        <SearchButton onPress={onPress}>
+          <Ionicons name="search" size={20} color="#666" />
+        </SearchButton>
       </Wrapper>
-
-      {/* Only display the search results after debounced input */}
-      <SearchFilter setInput={setInput} input={input} data={stream} />
+      {input.length > 0 && (
+        <SearchFilter setInput={setInput} input={input} data={stream} />
+      )}
     </>
-  );
-};
-
-export const SearchClose = ({ style, onPress, isSearch }) => {
-  return (
-    <TouchableOpacity onPress={onPress}>
-      <WrapperClose style={style}>
-        <FilterIcon name="filter" size={24} color="black" />
-        <TextField>
-          {I18nManager.isRTL ? "البحث عن المنتجات" : "Search for products"}
-        </TextField>
-        <SearchIcon name="search" size={24} color="black" />
-      </WrapperClose>
-    </TouchableOpacity>
   );
 };

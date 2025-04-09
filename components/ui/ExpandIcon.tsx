@@ -1,10 +1,15 @@
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import { ThemedText } from "../ThemedText";
-import { TitleWrapper } from "./Card";
-import { I18nManager, TouchableOpacity } from "react-native";
+import { I18nManager, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { router } from "expo-router";
-
+import { styled } from "styled-components";
+const TitleWrapper = styled(View)`
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 5px;
+`;
 const Expand = ({ category }) => {
   return (
     <TouchableOpacity

@@ -5,7 +5,7 @@
   },
 
   "build": {
-    "preview": {
+    "production": {
       "android": {
         "buildType": "apk"
       }
@@ -20,7 +20,6 @@
     },
     "preview4": {
       "distribution": "internal"
-    },
-    "production": {}
+    }
   }
 }

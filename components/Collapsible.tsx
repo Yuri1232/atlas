@@ -1,22 +1,19 @@
 import { PropsWithChildren, useState } from "react";
-import {
-  LayoutAnimation,
-  Platform,
-  StyleSheet,
-  TouchableOpacity,
-  UIManager,
-  View,
-} from "react-native";
-
+import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import Animated, { FadeIn, FadeOut, Layout } from "react-native-reanimated";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  Layout,
+  withSpring,
+  useAnimatedStyle,
+  withTiming,
+} from "react-native-reanimated";
 import React from "react";
-
-// Enable smooth layout animations for Android
 
 export function Collapsible({
   children,
@@ -29,28 +26,70 @@ export function Collapsible({
     setIsOpen((prev) => !prev);
   };
 
-  return (
-    <Animated.View layout={Layout} entering={FadeIn} style={styles.container}>
-      <TouchableOpacity
-        style={styles.heading}
-        onPress={toggleSection}
-        activeOpacity={0.8}
-      >
-        <IconSymbol
-          name="chevron.right"
-          size={20}
-          weight="medium"
-          color={theme === "light" ? Colors.light.icon : Colors.dark.icon}
-          style={{ transform: [{ rotate: isOpen ? "90deg" : "0deg" }] }}
-        />
+  const rotateStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          rotate: withSpring(isOpen ? "90deg" : "0deg", {
+            damping: 15,
+            stiffness: 100,
+          }),
+        },
+      ],
+    };
+  });
 
-        <ThemedText type="defaultSemiBold" style={{ fontSize: 14 }}>
+  return (
+    <Animated.View
+      layout={Layout}
+      entering={FadeIn.springify()}
+      style={[
+        styles.container,
+        {
+          backgroundColor:
+            theme === "light"
+              ? Colors.light.background
+              : Colors.dark.background,
+        },
+      ]}
+    >
+      <TouchableOpacity
+        style={[
+          styles.heading,
+          {
+            backgroundColor:
+              theme === "light"
+                ? Colors.light.lightGray
+                : Colors.dark.background,
+          },
+        ]}
+        onPress={toggleSection}
+        activeOpacity={0.7}
+      >
+        <Animated.View style={rotateStyle}>
+          <IconSymbol
+            name="chevron.right"
+            size={22}
+            weight="medium"
+            color={theme === "light" ? Colors.light.blue : Colors.dark.blue}
+          />
+        </Animated.View>
+
+        <ThemedText
+          type="defaultSemiBold"
+          style={[
+            styles.title,
+            {
+              color: theme === "light" ? Colors.light.blue : Colors.dark.blue,
+            },
+          ]}
+        >
           {title}
         </ThemedText>
       </TouchableOpacity>
 
       {isOpen && (
-        <Animated.View exiting={FadeOut} style={styles.content}>
+        <Animated.View exiting={FadeOut.springify()} style={styles.content}>
           {children}
         </Animated.View>
       )}
@@ -60,22 +99,47 @@ export function Collapsible({
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 10,
+    marginTop: 12,
     marginBottom: 100,
-    borderRadius: 8,
-    padding: 10,
-    backgroundColor: Colors.light.lightGray,
+    borderRadius: 16,
+    padding: 16,
     overflow: "hidden",
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.light.border,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   heading: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    padding: 10,
-    borderRadius: 8,
+    gap: 8,
+    padding: 12,
+    borderRadius: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.light.border,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "600",
   },
   content: {
-    marginTop: 6,
-    marginLeft: 24,
+    marginTop: 12,
+    marginLeft: 28,
   },
 });

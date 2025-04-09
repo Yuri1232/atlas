@@ -1,11 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { I18nManager, TouchableOpacity, View, StyleSheet } from "react-native";
+import {
+  I18nManager,
+  TouchableOpacity,
+  View,
+  StyleSheet,
+  Modal,
+  Animated,
+} from "react-native";
 import { ThemedText } from "../ThemedText";
-import styled from "styled-components";
+import styled from "styled-components/native";
 import { Colors } from "@/constants/Colors";
-import { AnimatePresence, MotiView, ScrollView } from "moti";
-import { useSelector } from "react-redux";
+import { AnimatePresence, MotiView } from "moti";
+import { useDispatch, useSelector } from "react-redux";
 import AlertMessage from "../features/Alert";
+import { router } from "expo-router";
+import { addToCart } from "@/states/ui/cart";
+import { useAuthCheck } from "@/hooks/useAuthCheck";
+import { BlurView } from "expo-blur";
+import { Ionicons } from "@expo/vector-icons";
+import LinearGradient from "react-native-linear-gradient";
+import { RootState } from "@/states/store";
+import { CartActions } from "@/states/user/cart";
+import { useUser } from "@/hooks/useUser";
+import { CartItem } from "@/app/types/cart";
+import { useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "@/app/types/navigation";
 
 const Wrapper = styled(TouchableOpacity)`
   background-color: ${Colors.dark.blue};
@@ -18,25 +37,90 @@ const Wrapper = styled(TouchableOpacity)`
   left: 15px;
   right: 15px;
 `;
+const AlertWrapper = styled(MotiView)`
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+`;
 
-const Button = ({ children }) => {
-  const { color, ram, storage } = useSelector((state) => state.ui);
+interface ButtonProps {
+  children: React.ReactNode;
+  isfeatures?: boolean;
+  quantity?: number;
+  selectedData?: CartItem;
+}
+
+interface UserState {
+  data: any;
+  loading: boolean;
+  error: string | null;
+}
+
+interface CartState {
+  items: CartItem[];
+}
+
+const Button = ({
+  children,
+  isfeatures,
+  quantity = 0,
+  selectedData: data,
+}: ButtonProps) => {
+  const navigation = useNavigation();
+  const { user, loading } = useUser();
+  const cart = useSelector(
+    (state: RootState) => state.cart
+  ) as unknown as CartState;
   const [allSelected, setAllSelected] = useState(false);
   const [alert, setAlert] = useState(false);
-  useEffect(() => {
-    if (color && ram && storage) {
-      setAllSelected(true);
-    } else {
-      setAllSelected(false);
-    }
-  }, [color, ram, storage]);
+  const { checkAuth } = useAuthCheck();
+  const { postCart } = useUser();
+  const dispatch = useDispatch();
+  const selectedData = data?.attributes;
 
-  const onPressHandler = () => {
-    if (!allSelected) {
+  useEffect(() => {
+    if (isfeatures) {
+      setAllSelected(quantity > 0);
+    } else {
+      setAllSelected(quantity > 0);
+    }
+  }, [isfeatures, quantity]);
+
+  const onPressHandler = async () => {
+    if (!user) {
       setAlert(true);
-      setTimeout(() => {
-        setAlert(false);
-      }, 3000);
+      setTimeout(() => setAlert(false), 3000);
+      return;
+    }
+
+    if (!selectedData) {
+      setAlert(true);
+      setTimeout(() => setAlert(false), 3000);
+      return;
+    }
+
+    try {
+      // First, add the item to the local UI cart state
+      dispatch(addToCart(selectedData));
+
+      // Then, send the data to the backend
+      const cartUserData = {
+        data: {
+          customer: user.id,
+          product: data?.id,
+          quantity: quantity || 1,
+        },
+      };
+
+      console.log("Cart User Data:", cartUserData);
+      await postCart(cartUserData);
+
+      // Navigate to the cart screen
+      router.push("/modal/cart");
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      setAlert(true);
+      setTimeout(() => setAlert(false), 3000);
     }
   };
 
@@ -65,7 +149,9 @@ const Button = ({ children }) => {
               transition={{ type: "timing", duration: 500 }}
             >
               <AlertMessage style={{ backgroundColor: Colors.light.lightRed }}>
-                Place select the options
+                {!user
+                  ? "Please login to add items to cart"
+                  : "Please select the options"}
               </AlertMessage>
             </MotiView>
           )}
@@ -73,9 +159,8 @@ const Button = ({ children }) => {
       </AlertWrapper>
       <Wrapper
         style={!allSelected && { backgroundColor: Colors.light.border }}
-        onPress={() => {
-          onPressHandler();
-        }}
+        onPress={onPressHandler}
+        disabled={!selectedData}
       >
         <ThemedText
           style={
@@ -93,9 +178,3 @@ const Button = ({ children }) => {
 };
 
 export default Button;
-
-const AlertWrapper = styled(MotiView)`
-  position: absolute;
-  bottom: 50px;
-  left: 50%;
-`;

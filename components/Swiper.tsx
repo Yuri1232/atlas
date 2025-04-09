@@ -15,7 +15,7 @@ import {
 import styled from "styled-components/native";
 
 const { width: widthScreen } = Dimensions.get("window");
-const width = widthScreen * 0.835;
+const width = widthScreen * 0.825;
 
 // Styled components
 const SwiperContainer = styled(View)`

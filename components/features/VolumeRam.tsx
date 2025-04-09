@@ -27,19 +27,14 @@ const VolumeRam = ({ data, availablity, defaultRam }) => {
   useEffect(() => {
     setSelectedColor(defaultRam);
     requestAnimationFrame(() => dispatch(ramSetter(defaultRam)));
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      dispatch(ramSetter(null));
-    }, [])
-  );
+  }, [defaultRam]);
 
   useEffect(() => {
     if (!data || !availablity) return;
     const unavailableItems = data?.filter(
       (item) => !availablity.includes(item)
     );
+
     setUnavail(unavailableItems);
   }, [data, availablity]);
 
@@ -50,6 +45,11 @@ const VolumeRam = ({ data, availablity, defaultRam }) => {
         horizontal
         inverted={isRTL}
         contentContainerStyle={{ gap: 20 }}
+        showsVerticalScrollIndicator={false}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5} // Limits rendering batches
+        windowSize={7} // Loads fewer items offscreen
+        updateCellsBatchingPeriod={50}
         data={[...new Set(data)]}
         renderItem={({ item, index }) => (
           <RenderFeature

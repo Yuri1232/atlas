@@ -1,16 +1,22 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { FlatList, I18nManager, TouchableOpacity, View } from "react-native";
+import {
+  BackHandler,
+  FlatList,
+  I18nManager,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { ThemedText } from "../ThemedText";
 import styled from "styled-components";
 import { Colors } from "@/constants/Colors";
 import RenderFeature from "./RenderSpecs";
 import SpecsTitle from "./SpecsTitle";
 import { useDispatch, useSelector } from "react-redux";
-import { ramSetter, storageSetter } from "@/states/ui";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import { colorSetter, ramSetter, storageSetter } from "@/states/ui";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import Loader from "../ui/Loader";
 
-const VolumeStorage = ({ data, availablity }) => {
+const VolumeStorage = ({ data, availablity, defaultStorage }) => {
   const isRTL = I18nManager.isRTL;
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [unavail, setUnavail] = useState();
@@ -18,6 +24,17 @@ const VolumeStorage = ({ data, availablity }) => {
   const param = useLocalSearchParams();
 
   const dispatch = useDispatch();
+  useEffect(() => {
+    const timmer = setTimeout(() => {
+      setSelectedColor(defaultStorage);
+      dispatch(storageSetter(defaultStorage));
+    }, 300);
+    console.log("storage render");
+
+    return () => {
+      clearImmediate(timmer);
+    };
+  }, [defaultStorage]);
 
   // Handle color selection and double-tap
   const handleSelect = useCallback(
@@ -34,15 +51,13 @@ const VolumeStorage = ({ data, availablity }) => {
     [dispatch, selectedColor]
   );
 
-  // Set initial color from defaultStorage
-
-  // Reset storage when navigating away
-  useFocusEffect(
-    useCallback(() => {
+  useEffect(() => {
+    return () => {
+      dispatch(colorSetter(null));
+      dispatch(ramSetter(null));
       dispatch(storageSetter(null));
-    }, [dispatch])
-  );
-
+    };
+  }, []);
   // Check for unavailable items
   useEffect(() => {
     if (!data || !availablity) return;

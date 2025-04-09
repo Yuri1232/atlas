@@ -11,7 +11,7 @@ const Color = ({
   defaultColor = "",
 }: {
   data: string[];
-  defaultColor: string;
+  defaultStorage: string;
 }) => {
   const isRTL = I18nManager.isRTL;
   const dispatch = useDispatch();
@@ -23,10 +23,12 @@ const Color = ({
   const [selectedColor, setSelectedColor] = useState<string | null>("");
 
   // Dispatch default color on mount
+
   useEffect(() => {
     setSelectedColor(defaultColor);
     dispatch(colorSetter(defaultColor));
-  }, []);
+    console.log("color render");
+  }, [defaultColor]);
 
   // Handle color selection
   const handleSelect = useCallback(
@@ -61,6 +63,11 @@ const Color = ({
         horizontal
         inverted={isRTL}
         contentContainerStyle={{ gap: 20 }}
+        showsVerticalScrollIndicator={false}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5} // Limits rendering batches
+        windowSize={7} // Loads fewer items offscreen
+        updateCellsBatchingPeriod={50}
         data={[...new Set(data)]}
         keyExtractor={(item) => item}
         renderItem={({ item, index }) => (

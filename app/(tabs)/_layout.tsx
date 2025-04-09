@@ -2,73 +2,89 @@ import { Tabs } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 import { HapticTab } from "@/components/HapticTab";
-import CurvedTabBarBackground from "@/components/CurvedTabBar";
 import "react-native-gesture-handler";
+import "react-native-reanimated";
 import {
   LucideHome,
   LucideShoppingCart,
-  LucideCalendar,
   LucideLayoutGrid,
-  LucidePi,
   TabletSmartphone,
   User,
 } from "lucide-react-native";
 import { Colors } from "@/constants/Colors";
+import QuantityCounter from "@/components/modal/QuantityCounter";
+import { useSelector } from "react-redux";
 
 export default function TabLayout() {
+  const { data } = useSelector((state: any) => state.cart);
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "orange",
-        tabBarInactiveTintColor: Colors.dark.price,
+        tabBarActiveTintColor: Colors.dark.blue,
+        tabBarInactiveTintColor: "#94A3B8",
         headerShown: false,
         tabBarButton: HapticTab,
-
         tabBarStyle: {
-          top: "90%",
-          marginHorizontal: 2,
-          height: 70,
-          position: "absolute", // Ensure transparency by making it float
-          backgroundColor: Colors.light.tabBar,
-          borderRadius: 30, // Fully transparent
-          borderTopWidth: 0, // Remove any top border
-          elevation: 2, // Remove shadow on Android
-          shadowOpacity: 3, // Remove shadow on iOS
-          zIndex: 9999999,
+          height: 65,
+          position: "absolute",
+          bottom: 20,
+          left: 20,
+          right: 20,
+          backgroundColor: "white",
+          borderRadius: 32,
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: 0.1,
+          shadowRadius: 12,
+          elevation: 8,
+          borderTopWidth: 0,
+          paddingBottom: 0,
+          paddingHorizontal: 16,
+        },
+        tabBarItemStyle: {
+          paddingTop: 8,
+          paddingBottom: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: "bold",
+          fontSize: 11,
+          fontFamily: "Medium",
+          paddingBottom: 4,
         },
       }}
     >
-      {/* Home */}
       <Tabs.Screen
         name="index"
         options={{
           title: "الرئيسية",
           tabBarIcon: ({ color, focused }) => (
-            <LucideHome size={24} color={color} />
+            <LucideHome
+              size={22}
+              color={color}
+              fill={focused ? color : "transparent"}
+              strokeWidth={focused ? 1.5 : 1.5}
+            />
           ),
         }}
       />
 
-      {/* Categories */}
       <Tabs.Screen
         name="categories"
         options={{
           title: "الفئات",
           tabBarIcon: ({ color, focused }) => (
             <LucideLayoutGrid
-              size={24}
-              fill={focused ? color : "none"}
+              size={22}
               color={color}
+              fill={focused ? color : "transparent"}
+              strokeWidth={focused ? 1.5 : 1.5}
             />
           ),
         }}
       />
 
-      {/* Center Cart Button (Floating Circular Design) */}
       <Tabs.Screen
         name="cart"
         options={{
@@ -77,50 +93,53 @@ export default function TabLayout() {
             <View
               style={{
                 backgroundColor: Colors.dark.blue,
-                width: 65,
-                height: 65,
-                borderRadius: 32.5,
+                width: 56,
+                height: 56,
+                borderRadius: 28,
                 justifyContent: "center",
                 alignItems: "center",
-                marginBottom: 30, // Lift it up
-                shadowColor: "#000",
+                marginBottom: 32,
+                shadowColor: Colors.dark.blue,
                 shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.2,
-                shadowRadius: 4,
-                elevation: 6, // For Android shadow
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
               }}
             >
-              <LucideShoppingCart
-                size={30}
-                fill={focused ? color : "none"}
-                color={focused ? color : "white"}
-              />
+              <QuantityCounter size={18}>{data.length}</QuantityCounter>
+              <LucideShoppingCart size={26} color="white" strokeWidth={1.5} />
             </View>
           ),
         }}
       />
 
-      {/* Services */}
       <Tabs.Screen
         name="products"
         options={{
           title: "منتجات",
           tabBarIcon: ({ color, focused }) => (
             <TabletSmartphone
-              size={24}
-              fill={focused ? color : "none"}
+              size={22}
               color={color}
+              fill={focused ? color : "transparent"}
+              strokeWidth={focused ? 1.5 : 1.5}
             />
           ),
         }}
       />
 
-      {/* Booking */}
       <Tabs.Screen
         name="booking"
         options={{
           title: "حساب",
-          tabBarIcon: ({ color }) => <User size={24} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <User
+              size={22}
+              color={color}
+              fill={focused ? color : "transparent"}
+              strokeWidth={focused ? 1.5 : 1.5}
+            />
+          ),
         }}
       />
     </Tabs>

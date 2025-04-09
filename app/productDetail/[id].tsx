@@ -7,11 +7,12 @@ import globalStyles from "@/components/globalStyles";
 import { ThemedText } from "@/components/ThemedText";
 import Button from "@/components/ui/Button";
 import { PriceHandler } from "@/components/ui/Card";
+import CustomHeader from "@/components/ui/CustomHeader";
 import Loader from "@/components/ui/Loader";
 import { Colors } from "@/constants/Colors";
 import { productDetailAction } from "@/states/prodcutDetail/productDetail";
 import { HeaderTitileSetter, ramSetter } from "@/states/ui";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import { Link, useLocalSearchParams, useNavigation } from "expo-router";
 import { ShoppingCart } from "lucide-react-native";
 import { MotiView } from "moti";
 import React, { useEffect, useMemo, useState } from "react";
@@ -40,66 +41,118 @@ import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 
 const Wrapper = styled(View)`
-  height: 290px;
-  margin-top: 40px;
+  height: 380px;
+  margin-top: 0;
+  background-color: ${Colors.dark.blue}05;
+  border-bottom-left-radius: 32px;
+  border-bottom-right-radius: 32px;
+  overflow: hidden;
 `;
 
 const Slide = styled(View)`
   justify-content: center;
   align-items: center;
-  width: "100%";
-  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+`;
+
+const ContentContainer = styled(ScrollView)`
+  background-color: #ffffff;
+  flex: 1;
 `;
 
 const TextWrapper = styled(Animated.View)`
-  justify-content: space-between;
-  gap: 10px;
+  padding: 20px 16px;
+  margin: -30px 16px 0;
+  border-radius: 20px;
+  background-color: white;
+  elevation: 3;
+  shadow-color: #000;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.12;
+  shadow-radius: 12px;
 `;
 
 const Line = styled(View)`
   height: 1px;
-  background-color: ${Colors.light.lightGray};
+  background-color: ${Colors.light.lightGray}50;
+  margin: 20px 16px;
 `;
 
 const QuanWrapper = styled(View)`
-  background-color: ${Colors.light.blue};
+  background-color: ${Colors.light.blue}08;
   align-self: flex-start;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  border-radius: 8px;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid ${Colors.light.blue}15;
 `;
 
 const Title = styled(ThemedText)`
   font-size: 20px;
+  font-family: "SemiBold";
+  margin-bottom: 12px;
+  color: black;
+  line-height: 28px;
+  letter-spacing: -0.2px;
 `;
 
 const PriceWrapper = styled(View)`
   flex-direction: row;
-  gap: 20px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
 `;
 
 const OldPrice = styled(ThemedText)`
   color: ${Colors.light.lightRed};
-  font-size: 18px;
+  font-size: 15px;
+  font-family: "Regular";
+  text-decoration-line: line-through;
+  opacity: 0.7;
 `;
 
 const NewPrice = styled(ThemedText)`
-  color: ${Colors.dark.price};
+  color: ${Colors.dark.blue};
+  font-size: 22px;
+  font-family: "SemiBold";
+  letter-spacing: -0.3px;
+  line-height: 28px;
+`;
+
+const SectionTitle = styled(ThemedText)`
   font-size: 18px;
+  font-family: "SemiBold";
+  color: black;
+  margin: 0 16px 16px;
+`;
+
+const BottomContainer = styled(View)`
+  padding: 16px 20px;
+  padding-bottom: 32px;
+  background-color: white;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  elevation: 12;
+  shadow-color: #000;
+  shadow-offset: 0px -4px;
+  shadow-opacity: 0.08;
+  shadow-radius: 12px;
 `;
 
 const ProductDetail = () => {
   const { pData, pStatus } = useSelector((state) => state.products);
   const { color, ram, storage } = useSelector((state) => state.ui);
   const [stream, setStream] = useState([]);
-  const [feature, setFeature] = useState({});
+  const [firstLoader, setFirstLoader] = useState(false);
   const [selectedDataAnimate, setSelectedDataAnimate] = useState([]);
   const [selectedData, setSelectedData] = useState([]);
   const [baseName, setBaseName] = useState("");
-  const [availColor, setAvailColor] = useState([]);
+  const [avail, setAvai] = useState([]);
   const [availStorage, setAvailStorage] = useState([]);
   const [allRam, setAllRam] = useState([]);
   const [allColor, setAllColor] = useState([]);
@@ -128,11 +181,12 @@ const ProductDetail = () => {
       transform: [{ translateY: translateY.value }],
     };
   });
+  console.log(ram, color, storage);
 
   const priceAnimatedStyle = useAnimatedStyle(() => {
     return {
       opacity: opacity.value,
-      transform: [{ translateY: translateYUp.value }],
+      transform: [{ translateY: translateY.value }],
     };
   });
 
@@ -146,10 +200,15 @@ const ProductDetail = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsTimeoutDone(true); // Set the value to true after 1 second
-    }, 1000);
+    }, 1500);
+    const timer2 = setTimeout(() => {
+      setFirstLoader(true); // Set the value to true after 1 second
+    }, 500);
 
     // Cleanup function to clear the timeout if the component is unmounted
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer), clearImmediate(timer2);
+    };
   }, []);
 
   function normalizeName(name) {
@@ -214,14 +273,21 @@ const ProductDetail = () => {
   const filterItems = (stream, filters) => {
     const avail = stream.filter((item) =>
       Object.entries(filters).every(
-        ([key, value]) => !value || item?.features[key] === value
+        ([key, value]) => !value || item?.attributes?.features[key] === value
       )
     );
-
-    setAvailStorage([...new Set(avail.map((item) => item?.features?.storage))]);
-    setAvailQuality([...new Set(avail.map((item) => item?.features?.quality))]);
+    setAvai(avail);
+    setAvailStorage([
+      ...new Set(avail.map((item) => item?.attributes.features?.storage)),
+    ]);
+    setAvailQuality([
+      ...new Set(avail.map((item) => item?.attributes.features?.quality)),
+    ]);
     setAvailQuantity(
-      avail.reduce((sum, item) => sum + Number(item.features?.quantity), 0)
+      avail.reduce(
+        (sum, item) => sum + Number(item.attributes.features?.quantity),
+        0
+      )
     );
     return avail;
   };
@@ -230,24 +296,28 @@ const ProductDetail = () => {
     if (stream) {
       const baseData = stream.map((item) => item?.attributes);
       if (baseData) {
-        const selected = filterItems(baseData, { color, ram, storage });
+        const selected = filterItems(stream, { color, ram, storage });
+        console.log("selected", stream);
+
         if (color && ram && storage) {
           setSelectedDataAnimate(selected?.[0]);
-        } else if (color && ram && !storage) {
-          setSelectedBaseRam(selected?.map((item) => item?.features?.storage));
+        } else {
+          setSelectedDataAnimate(baseData?.[0]);
         }
       }
       navigation.setOptions({ title: baseName });
     }
-  }, [color, stream, ram, storage, baseName]);
+  }, [color, stream, ram, storage]);
 
   useEffect(() => {
     if (stream) {
       const baseData = stream.map((item) => item?.attributes);
       if (baseData) {
-        const selected = filterItems(baseData, { color, ram });
+        const selected = filterItems(stream, { color, ram });
         if (color && ram) {
-          setSelectedBaseRam(selected?.map((item) => item?.features?.storage));
+          setSelectedBaseRam(
+            selected?.map((item) => item?.attributes.features?.storage)
+          );
         }
       }
     }
@@ -258,163 +328,220 @@ const ProductDetail = () => {
     // Trigger fade-out effect when the title or price is about to change
     opacity.value = withTiming(0, { duration: 0 });
     translateY.value = withTiming(200, { duration: 0 });
-    translateYUp.value = withTiming(500, { duration: 0 });
 
     // Wait for the fade-out to finish, then fade-in with the new values
     setTimeout(() => {
       setSelectedData(selectedDataAnimate);
       opacity.value = withSpring(1, { damping: 10, stiffness: 100 });
       translateY.value = withSpring(0, { damping: 20, stiffness: 100 });
-      translateYUp.value = withSpring(0, { damping: 15, stiffness: 100 });
     }, 200); // Adjust this duration to control the fade-out and fade-in timing
-  }, [storage]);
+  }, [selectedDataAnimate]);
 
-  if (isTimeoutDone === false || !defaultStorage) {
-    return <Loader />;
-  } else if (defaultStorage.storage) {
-    return (
-      <Animated.View style={{ flex: 1, backgroundColor: "white" }}>
-        <MotiView
-          style={{ flex: 1 }}
-          from={{ opacity: 0, translateY: 100 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{
-            type: "timing",
-            duration: 500,
-            easing: Easing.inOut(Easing.ease),
+  const buttonText = useMemo(() => {
+    if (availQuantity === 0) {
+      return isRTL ? "غير متوفر الآن" : "Out of stock";
+    }
+    return isRTL ? "أضف إلى السلة" : "Add to Cart";
+  }, [isRTL, availQuality]);
+
+  return (
+    <Animated.View style={{ flex: 1, backgroundColor: "#F8FAFC" }}>
+      {!isTimeoutDone && (
+        <View
+          style={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            zIndex: 999,
           }}
         >
-          <SafeAreaView style={[globalStyles.global]}>
-            <ScrollView
-              contentContainerStyle={{
-                paddingHorizontal: 15,
-                gap: 10,
-                flexGrow: 1,
-              }}
-            >
-              <Wrapper>
-                <Swiper
-                  focusable
-                  loadMinimal
-                  loadMinimalSize={2}
-                  loop
-                  showsPagination
-                >
-                  {image.map((item, index) => (
-                    <Slide key={index}>
-                      <Image
-                        style={{
-                          height: 240,
-                          width: "100%",
-                          resizeMode: "contain",
-                        }}
-                        source={{ uri: process.env.EXPO_PUBLIC_BASE + item }}
-                      />
-                    </Slide>
-                  ))}
-                </Swiper>
-              </Wrapper>
-              <TextWrapper>
+          <Loader />
+        </View>
+      )}
+      <MotiView style={{ flex: 1 }}>
+        <CustomHeader title={baseName} />
+        <SafeAreaView style={{ flex: 1 }}>
+          <ContentContainer showsVerticalScrollIndicator={false}>
+            <Wrapper>
+              <Swiper
+                loop
+                showsPagination
+                dotStyle={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: "rgba(0,0,0,0.2)",
+                  marginBottom: 24,
+                }}
+                activeDotStyle={{
+                  width: 20,
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: Colors.dark.blue,
+                  marginBottom: 24,
+                }}
+              >
+                {image.map((item, index) => (
+                  <Slide key={index}>
+                    <Image
+                      style={{
+                        height: 240,
+                        width: "100%",
+                        resizeMode: "contain",
+                      }}
+                      source={{ uri: process.env.EXPO_PUBLIC_BASE + item }}
+                    />
+                  </Slide>
+                ))}
+              </Swiper>
+            </Wrapper>
+
+            <TextWrapper>
+              <View style={{ overflow: "hidden" }}>
+                <Animated.View style={titleAnimatedStyle}>
+                  <Title>
+                    {selectedData?.name
+                      ? selectedData?.name
+                          .split(" ")
+                          .map(
+                            (word) =>
+                              word.charAt(0).toUpperCase() +
+                              word.slice(1).toLowerCase()
+                          )
+                          .join(" ")
+                      : param.headerTitle}
+                  </Title>
+                </Animated.View>
+              </View>
+
+              <PriceWrapper>
                 <View style={{ overflow: "hidden" }}>
-                  <Animated.View style={titleAnimatedStyle}>
-                    <Title type="defaultSemiBold">
-                      {selectedData?.name
-                        ? selectedData?.name
-                        : param.headerTitle}
-                    </Title>
+                  <Animated.View style={[priceAnimatedStyle]}>
+                    <NewPrice>
+                      {selectedData?.price ? selectedData?.price : param.price}
+                    </NewPrice>
                   </Animated.View>
                 </View>
-
-                <PriceWrapper>
+                {selectedData?.discount_price && (
                   <View style={{ overflow: "hidden" }}>
-                    {selectedData?.discount_price && (
-                      <Animated.View style={discountPriceStyle}>
-                        <OldPrice
-                          style={{
-                            textDecorationLine: "line-through",
-                            color: "red",
-                            fontFamily: "Regular",
-                          }}
-                          type="title"
-                        >
-                          {selectedData?.discount_price}
-                        </OldPrice>
-                      </Animated.View>
-                    )}
-                  </View>
-
-                  <View style={{ overflow: "hidden" }}>
-                    <Animated.View style={[priceAnimatedStyle]}>
-                      <NewPrice type="title">
-                        {selectedData?.price
-                          ? selectedData?.price
-                          : param.price}
-                      </NewPrice>
+                    <Animated.View style={[discountPriceStyle]}>
+                      <OldPrice>{selectedData?.discount_price}</OldPrice>
                     </Animated.View>
                   </View>
-                </PriceWrapper>
-              </TextWrapper>
+                )}
+              </PriceWrapper>
 
               <QuanWrapper>
-                <ShoppingCart size={20} />
-                {availQuantity < 4 ? (
-                  <ThemedText type="subtitle">
-                    {isRTL
+                <ShoppingCart size={18} color={Colors.dark.blue} />
+                <ThemedText
+                  type="subtitle"
+                  style={{
+                    color: Colors.dark.blue,
+                    fontSize: 14,
+                    opacity: 0.9,
+                  }}
+                >
+                  {availQuantity < 4
+                    ? isRTL
                       ? `متوفر ${availQuantity} قطع فقط!`
-                      : `Only ${availQuantity} pieces are available!`}
-                  </ThemedText>
-                ) : (
-                  <ThemedText type="subtitle">
-                    {availQuantity}
-                    {isRTL ? "قطع المتوفرة " : "pieces available "}
-                  </ThemedText>
-                )}
+                      : `Only ${availQuantity} pieces left!`
+                    : isRTL
+                    ? `${availQuantity} قطع المتوفرة`
+                    : `${availQuantity} pieces available`}
+                </ThemedText>
               </QuanWrapper>
+            </TextWrapper>
 
-              <Line />
-              {allColor[0] && (
-                <Color defaultColor={defaultStorage.color} data={allColor} />
-              )}
+            <Line />
 
-              {allRam[0] && (
-                <VolumeRam defaultRam={defaultStorage.ram} data={allRam} />
-              )}
-              {allStorage[0] && defaultStorage.storage && (
-                <VolumeStorage
-                  data={allStorage}
-                  availablity={selectedBaseRam}
-                />
-              )}
+            {(allColor[0] || allRam || allStorage) && (
+              <>
+                <SectionTitle>
+                  {isRTL ? "اختر الخيارات" : "Select Options"}
+                </SectionTitle>
+                <View style={{ paddingHorizontal: 16, gap: 16 }}>
+                  {allColor[0] && (
+                    <Color
+                      defaultColor={defaultStorage?.color}
+                      data={allColor}
+                    />
+                  )}
+                  {allRam[0] && (
+                    <VolumeRam defaultRam={defaultStorage?.ram} data={allRam} />
+                  )}
+                  {allStorage[0] && defaultStorage?.storage && (
+                    <VolumeStorage
+                      data={allStorage}
+                      availablity={selectedBaseRam}
+                      defaultStorage={defaultStorage.storage}
+                    />
+                  )}
+                </View>
+              </>
+            )}
 
-              <Quantity isRTL={isRTL} quantity={availQuantity} />
+            <View style={{ height: 16 }} />
 
-              {!selectedData?.product?.data?.attributes?.information && (
-                <View style={{ marginTop: 100 }} />
-              )}
-              {selectedData?.product?.data?.attributes?.information.map(
-                (entity, index) => (
-                  <Collapsible key={index} title={entity.title}>
-                    <ThemedText
-                      style={{
-                        backgroundColor: Colors.light.lightGray,
-                        flex: 1,
-                      }}
-                      type="subtitle"
-                    >
-                      {entity.description}
-                    </ThemedText>
-                  </Collapsible>
-                )
-              )}
-            </ScrollView>
-            <Button bg={Colors.light.green} style={{ marginTop: 10 }}>
-              {isRTL ? "أضف إلى السلة" : "Add to Cart"}
-            </Button>
-          </SafeAreaView>
-        </MotiView>
-      </Animated.View>
-    );
-  }
+            <Quantity
+              isRTL={isRTL}
+              quantity={availQuantity}
+              product={selectedData}
+            />
+
+            {selectedData?.product?.data?.attributes?.information?.map(
+              (entity, index) => (
+                <Collapsible
+                  key={index}
+                  title={entity.title}
+                  style={{
+                    backgroundColor: "white",
+                    marginHorizontal: 16,
+                    marginBottom: 12,
+                    borderRadius: 16,
+                    overflow: "hidden",
+                    elevation: 1,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.05,
+                    shadowRadius: 8,
+                  }}
+                >
+                  <ThemedText
+                    style={{
+                      backgroundColor: Colors.light.lightGray,
+                      padding: 16,
+                      borderRadius: 12,
+                      fontSize: 14,
+                      lineHeight: 22,
+                      opacity: 0.9,
+                    }}
+                    type="subtitle"
+                  >
+                    {entity.description}
+                  </ThemedText>
+                </Collapsible>
+              )
+            )}
+
+            <View style={{ height: 100 }} />
+          </ContentContainer>
+
+          <Button
+            bg={availQuantity > 0 ? Colors.dark.blue : Colors.light.lightGray}
+            style={{
+              borderRadius: 16,
+              height: 56,
+            }}
+            isfeatures={avail[0]?.features}
+            selectedData={selectedData}
+            quantity={availQuantity}
+          >
+            {buttonText}
+          </Button>
+        </SafeAreaView>
+      </MotiView>
+    </Animated.View>
+  );
 };
 
 export default ProductDetail;

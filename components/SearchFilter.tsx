@@ -5,13 +5,14 @@ import {
   View,
   Dimensions,
   I18nManager,
+  Keyboard,
 } from "react-native";
 import { AnimatePresence, MotiView } from "moti";
 import React, { useEffect, useState } from "react";
 import { ThemedText } from "./ThemedText";
 import styled from "styled-components";
 import { Colors } from "@/constants/Colors";
-import { Search } from "lucide-react-native";
+import { Search, ArrowRight } from "lucide-react-native";
 import { CardRender } from "./ui/Card";
 
 export const RenderItem = ({ item, index }) => {
@@ -19,8 +20,52 @@ export const RenderItem = ({ item, index }) => {
     <View style={styles.placeholder} />
   ) : (
     <View key={item.slug}>
-      <CardRender key={index} item={item} index={index} />
+      <CardRender key={index} item={item} index={index} isHorzontal={false} />
     </View>
+  );
+};
+
+const Wrapper = styled(MotiView)`
+  background: white;
+  border-radius: 16px;
+  margin: 8px 15px;
+  padding: 8px;
+  shadow-color: #000;
+  shadow-offset: 0px 2px;
+  shadow-opacity: 0.1;
+  shadow-radius: 8px;
+  elevation: 3;
+`;
+
+const SuggestionItem = styled(TouchableOpacity)`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background-color: ${(props) =>
+    props.isHighlighted ? "rgba(37, 99, 235, 0.1)" : "transparent"};
+`;
+
+const HighlightText = ({ text, highlight }) => {
+  const parts = text.split(new RegExp(`(${highlight})`, "gi"));
+  return (
+    <ThemedText style={{ fontSize: 15, lineHeight: 20 }}>
+      {parts.map((part, i) =>
+        part.toLowerCase() === highlight.toLowerCase() ? (
+          <ThemedText
+            key={i}
+            style={{ color: Colors.light.blue, fontFamily: "SemiBold" }}
+          >
+            {part}
+          </ThemedText>
+        ) : (
+          <ThemedText key={i} style={{ color: "#1a1a1a" }}>
+            {part}
+          </ThemedText>
+        )
+      )}
+    </ThemedText>
   );
 };
 
@@ -28,6 +73,7 @@ const SearchFilter = ({ data, input, setInput }) => {
   const [isPress, setIsPress] = useState(false);
   const [searchEngine, setSearchEngine] = useState([]);
   const [searchResult, setSearchResult] = useState([]);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   // Calculate number of columns based on screen width
   const screenWidth = Dimensions.get("window").width;
@@ -69,22 +115,18 @@ const SearchFilter = ({ data, input, setInput }) => {
     }
   }, [isPress]);
 
-  const Wrapper = styled(MotiView)`
-    position: relative;
-    left: 0px;
-    background: ${Colors.light.blue};
-    border-radius: 10px;
-    padding: 10px 10px;
-    margin: 5px 15px;
-    gap: 4px;
-  `;
+  useEffect(() => {
+    // Add a listener to detect when the keyboard is dismissed
+    const keyboardHideListener = Keyboard.addListener("keyboardDidHide", () => {
+      setSearchResult([]); // Hide suggestions when the keyboard is dismissed
+    });
 
-  const TextWrapper = styled(MotiView)`
-    background: ${Colors.dark.blue};
-    padding: 10px 10px;
-    border-radius: 5px;
-    font-size: 13px;
-  `;
+    // Clean up the listener when the component is unmounted
+    return () => {
+      keyboardHideListener.remove();
+    };
+  }, []);
+
   const SearchLogoWrapper = styled(View)`
     position: absolute;
     top: 50%;
@@ -97,36 +139,38 @@ const SearchFilter = ({ data, input, setInput }) => {
     <>
       {searchResult.length > 0 && (
         <Wrapper
-          key={searchResult.length} // ✅ Key ensures animation updates dynamically
-          from={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ type: "spring", damping: 15, stiffness: 100 }}
+          from={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          transition={{ type: "spring", damping: 18, stiffness: 250 }}
         >
-          {searchResult.map((item, key) => (
-            <TouchableOpacity
-              key={item.name} // Add unique key prop
+          {searchResult.map((item, index) => (
+            <SuggestionItem
+              key={item.name}
+              isHighlighted={index === highlightedIndex}
               onPress={() => {
-                setIsPress(true), setInput(item.name);
+                setIsPress(true);
+                setInput(item.name);
+              }}
+              onPressIn={() => setHighlightedIndex(index)}
+              onPressOut={() => {
+                setHighlightedIndex(-1);
+                // Delay hiding search suggestions to allow for any touch actions
+                setTimeout(() => {
+                  setSearchResult([]); // Hide suggestions after press out
+                }, 200); // Adjust timeout duration as needed
               }}
             >
-              <TextWrapper
-                key={item.name} // ✅ Ensures smooth entry/exit animations for each item
-                from={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{
-                  type: "spring",
-                  damping: 12,
-                  stiffness: 100,
-                  delay: key * 100,
-                }}
-              >
-                <ThemedText style={{ color: "white" }} type="subtitle">
-                  {item.name}
-                </ThemedText>
-              </TextWrapper>
-            </TouchableOpacity>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Search
+                  size={16}
+                  color={Colors.light.blue}
+                  style={{ marginRight: 12 }}
+                />
+                <HighlightText text={item.name} highlight={input} />
+              </View>
+              <ArrowRight size={16} color="#999" />
+            </SuggestionItem>
           ))}
         </Wrapper>
       )}
