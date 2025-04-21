@@ -19,10 +19,10 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/states/store";
 import { useUser } from "@/hooks/useUser";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from "expo-image-picker";
 
 const { width } = Dimensions.get("window");
 
-// Enable RTL
 I18nManager.allowRTL(true);
 I18nManager.forceRTL(true);
 
@@ -45,39 +45,22 @@ export default function Profile() {
     null
   );
 
-  useEffect(() => {
-    const loadUserData = async () => {
-      if (currentUser?.uid) {
-        await getUser(currentUser.uid);
-      }
-    };
-    loadUserData();
-  }, [currentUser?.uid]);
-
-  const loadLocalProfileImage = async () => {
-    if (currentUser?.uid) {
-      try {
-        const savedImageUri = await AsyncStorage.getItem(
-          `profile_image_${currentUser.uid}`
-        );
-        if (savedImageUri) {
-          setLocalProfileImage(savedImageUri);
-        }
-      } catch (error) {
-        console.error("Error loading profile image from storage:", error);
-      }
-    }
-  };
-
   useFocusEffect(
     React.useCallback(() => {
-      const refreshData = async () => {
-        if (currentUser?.uid) {
+      let isActive = true;
+
+      const refreshUserData = async () => {
+        if (isActive && currentUser?.uid) {
           await getUser(currentUser.uid);
           await loadLocalProfileImage();
         }
       };
-      refreshData();
+
+      refreshUserData();
+
+      return () => {
+        isActive = false;
+      };
     }, [currentUser?.uid])
   );
 
@@ -111,11 +94,39 @@ export default function Profile() {
     }
   };
 
+  const loadLocalProfileImage = async () => {
+    try {
+      const uri = await AsyncStorage.getItem(
+        `profile_image_${currentUser?.uid}`
+      );
+      if (uri) {
+        setLocalProfileImage(uri);
+      }
+    } catch (error) {
+      console.error("Error loading profile image:", error);
+    }
+  };
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+    });
+
+    if (!result.canceled && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      setLocalProfileImage(uri);
+      await AsyncStorage.setItem(`profile_image_${currentUser?.uid}`, uri);
+    }
+  };
+
   const menuItems: MenuItem[] = [
     {
       icon: "person-outline",
       title: "تعديل الملف الشخصي",
-      onPress: () => router.push("/profile-form"),
+      onPress: () => router.push("/full-name"),
     },
     {
       icon: "time-outline",
@@ -150,20 +161,21 @@ export default function Profile() {
       style={[styles.container, { paddingTop: insets.top }]}
     >
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]}
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       >
         <Animated.View
           style={[
             styles.content,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY }],
-            },
+            { opacity: fadeAnim, transform: [{ translateY }] },
           ]}
         >
           <View style={styles.header}>
-            <View style={styles.profileImageContainer}>
+            <TouchableOpacity
+              style={styles.profileImageContainer}
+              onPress={pickImage}
+              activeOpacity={0.8}
+            >
               {localProfileImage ? (
                 <Image
                   source={{ uri: localProfileImage }}
@@ -177,15 +189,21 @@ export default function Profile() {
                   style={styles.profileImage}
                 />
               ) : (
-                <Image
-                  source={{ uri: "https://via.placeholder.com/150" }}
-                  style={styles.profileImage}
-                />
+                <View
+                  style={[styles.profileImage, styles.defaultIconContainer]}
+                >
+                  <Ionicons
+                    name="person-circle-outline"
+                    size={100}
+                    color="#FF6B00"
+                  />
+                </View>
               )}
-            </View>
-            <Text style={styles.name}>
-              {userData?.full_name || "مستخدم جديد"}
-            </Text>
+              <View style={styles.cameraIconContainer}>
+                <Ionicons name="camera-outline" size={20} color="#fff" />
+              </View>
+            </TouchableOpacity>
+            <Text style={styles.name}>{userData?.full_name ?? "—"}</Text>
             <Text style={styles.phone}>{currentUser?.phoneNumber}</Text>
             <View style={styles.verifiedBadge}>
               <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
@@ -240,10 +258,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 40,
-  },
   content: {
     flex: 1,
     padding: 20,
@@ -268,6 +282,19 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     borderRadius: 60,
+  },
+  defaultIconContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 107, 0, 0.05)",
+  },
+  cameraIconContainer: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: "#FF6B00",
+    borderRadius: 12,
+    padding: 6,
   },
   name: {
     fontSize: 24,

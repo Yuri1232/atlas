@@ -27,7 +27,6 @@ const Color = ({
   useEffect(() => {
     setSelectedColor(defaultColor);
     dispatch(colorSetter(defaultColor));
-    console.log("color render");
   }, [defaultColor]);
 
   // Handle color selection
@@ -56,6 +55,11 @@ const Color = ({
     [selectedColor, dispatch, pData]
   );
 
+  const handleColorSelect = (color: string) => {
+    setSelectedColor(color);
+    handleSelect(color);
+  };
+
   return (
     <View style={{ gap: 2 }}>
       {data.length > 0 && <SpecsTitle>{isRTL ? "لون" : "Color"}</SpecsTitle>}
@@ -74,7 +78,7 @@ const Color = ({
           <RenderFeature
             item={item}
             index={index}
-            handleSelect={handleSelect}
+            handleSelect={handleColorSelect}
             onSelect={selectedColor}
             isColor
           />

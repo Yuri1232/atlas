@@ -8,11 +8,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   Animated,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import auth from "@react-native-firebase/auth";
 
 export default function Verification() {
   const router = useRouter();
@@ -20,6 +22,7 @@ export default function Verification() {
   const [code, setCode] = useState(["", "", "", ""]);
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(0));
+  const [confirm, setConfirm] = useState<any>(null);
 
   useEffect(() => {
     Animated.parallel([
@@ -56,10 +59,26 @@ export default function Verification() {
     }
   };
 
-  const handleVerify = () => {
-    // Add your verification logic here
-    const verificationCode = code.join("");
-    console.log("Verification code:", verificationCode);
+  const verifyCode = async (verificationCode: string) => {
+    try {
+      const confirmationResult = await confirm?.confirm(verificationCode);
+      if (confirmationResult) {
+        return true;
+      }
+      throw new Error("Invalid verification code");
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleVerification = async () => {
+    try {
+      const verificationCode = code.join("");
+      await verifyCode(verificationCode);
+      router.push("/full-name");
+    } catch (error) {
+      Alert.alert("Error", "Invalid verification code");
+    }
   };
 
   return (
@@ -107,7 +126,10 @@ export default function Verification() {
             ))}
           </View>
 
-          <TouchableOpacity style={styles.verifyButton} onPress={handleVerify}>
+          <TouchableOpacity
+            style={styles.verifyButton}
+            onPress={handleVerification}
+          >
             <LinearGradient
               colors={["#FF6B00", "#FF8533"]}
               start={{ x: 0, y: 0 }}

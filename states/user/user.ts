@@ -50,7 +50,7 @@ export const uploadImage = createAsyncThunk(
 // Create async thunk for getting user data
 export const getCustomer = createAsyncThunk(
   "user/getCustomer",
-  async (userId: string, { rejectWithValue }) => {
+  async (userId: string) => {
     try {
       const response = await axios.get(
         `${process.env.EXPO_PUBLIC_API}/customers/find-one/${userId}`,
@@ -62,9 +62,7 @@ export const getCustomer = createAsyncThunk(
       );
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch user data"
-      );
+      return error.response?.data?.message || "Failed to fetch user data";
     }
   }
 );

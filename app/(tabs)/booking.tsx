@@ -122,7 +122,7 @@ const BookingScreen = () => {
       if (confirmationResult) {
         const { additionalUserInfo, user } = confirmationResult;
         if (additionalUserInfo?.isNewUser) {
-          router.push("/profile-form");
+          router.push("/full-name");
         } else {
           router.push("/(tabs)/booking");
         }
@@ -258,24 +258,25 @@ const BookingScreen = () => {
   if (user) {
     return <ProfileScreen />;
   }
-
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardAvoid}
-      >
-        {!confirm ? renderPhoneInput() : renderCodeInput()}
-      </KeyboardAvoidingView>
-      <CustomAlert
-        visible={alert.visible}
-        title={alert.title}
-        message={alert.message}
-        type={alert.type}
-        onClose={() => setAlert({ ...alert, visible: false })}
-      />
-    </SafeAreaView>
-  );
+  if (!user) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.keyboardAvoid}
+        >
+          {!confirm ? renderPhoneInput() : renderCodeInput()}
+        </KeyboardAvoidingView>
+        <CustomAlert
+          visible={alert.visible}
+          title={alert.title}
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert({ ...alert, visible: false })}
+        />
+      </SafeAreaView>
+    );
+  }
 };
 
 const styles = StyleSheet.create({

@@ -19,6 +19,7 @@ import type { Address } from "../../states/address/types";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { ThemedText } from "../../components/ThemedText";
+import { useUser } from "@/hooks/useUser";
 
 type RootStackParamList = {
   AddAddress: { address?: Address } | undefined;
@@ -141,6 +142,8 @@ interface AddressScreenProps {
 }
 
 const AddressScreen: React.FC<AddressScreenProps> = ({ route }) => {
+  const { user } = useUser();
+
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const dispatch = useDispatch();
@@ -226,13 +229,13 @@ const AddressScreen: React.FC<AddressScreenProps> = ({ route }) => {
           </View>
           <MapPin size={24} color="#212529" />
         </Header>
-
         <FormContainer>
           <FormSection>
             <InputLabel>الاسم الكامل</InputLabel>
             <StyledInput
               placeholder="أدخل اسمك الكامل"
-              value={formData.fullName}
+              value={user?.full_name}
+              editable={false}
               onChangeText={(text) => {
                 setFormData({ ...formData, fullName: text });
                 if (errors.fullName) {
@@ -274,7 +277,7 @@ const AddressScreen: React.FC<AddressScreenProps> = ({ route }) => {
                 <InputLabel>المدينة</InputLabel>
                 <StyledInput
                   placeholder="المدينة"
-                  value={formData.city}
+                  defaultValue={user?.city}
                   onChangeText={(text) => {
                     setFormData({ ...formData, city: text });
                     if (errors.city) {
@@ -289,7 +292,7 @@ const AddressScreen: React.FC<AddressScreenProps> = ({ route }) => {
                 <InputLabel>المنطقة</InputLabel>
                 <StyledInput
                   placeholder="المنطقة"
-                  value={formData.state}
+                  defaultValue={user?.address}
                   onChangeText={(text) =>
                     setFormData({ ...formData, state: text })
                   }
@@ -300,7 +303,7 @@ const AddressScreen: React.FC<AddressScreenProps> = ({ route }) => {
 
             <Row>
               <HalfWidth>
-                <InputLabel>الرمز البريدي</InputLabel>
+                <InputLabel>الرمز البريدي (اختياري)</InputLabel>
                 <StyledInput
                   placeholder="الرمز البريدي"
                   value={formData.zipCode}
@@ -311,27 +314,13 @@ const AddressScreen: React.FC<AddressScreenProps> = ({ route }) => {
                   placeholderTextColor="#ADB5BD"
                 />
               </HalfWidth>
-              <HalfWidth>
-                <InputLabel>البلد</InputLabel>
-                <StyledInput
-                  placeholder="البلد"
-                  value={formData.country}
-                  onChangeText={(text) => {
-                    setFormData({ ...formData, country: text });
-                    if (errors.country) {
-                      setErrors({ ...errors, country: "" });
-                    }
-                  }}
-                  placeholderTextColor="#ADB5BD"
-                />
-                {errors.country && <ErrorText>{errors.country}</ErrorText>}
-              </HalfWidth>
             </Row>
 
             <InputLabel>رقم الهاتف</InputLabel>
             <StyledInput
               placeholder="رقم الهاتف"
-              value={formData.phone}
+              value={user?.phone_number}
+              editable={false}
               onChangeText={(text) => {
                 setFormData({ ...formData, phone: text });
                 if (errors.phone) {

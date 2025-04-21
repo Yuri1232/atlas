@@ -7,6 +7,7 @@ import cartReducer from "./ui/cart";
 import addressReducer from "./address/slice";
 import userReducer from "./user/user";
 import userCartReducer from "./user/cart";
+import userAddressReducer from "./user/address";
 const store = configureStore({
   reducer: {
     home: homeReducer,
@@ -17,6 +18,7 @@ const store = configureStore({
     address: addressReducer,
     user: userReducer,
     userCart: userCartReducer,
+    userAddress: userAddressReducer,
   },
 });
 

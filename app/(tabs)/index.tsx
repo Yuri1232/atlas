@@ -44,6 +44,7 @@ import globalStyles from "@/components/globalStyles";
 import Loader from "@/components/ui/Loader";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { useUser } from "@/hooks/useUser";
 
 const { width } = Dimensions.get("window");
 
@@ -259,11 +260,12 @@ const HomeScreen: React.FC = () => {
   const flatListRef = React.useRef<FlatList>(null);
   const [stopGlobe, setStopGlobe] = useState(false);
   const headerHeight = insets.top + 120;
-
+  const { getCart } = useUser();
   // Memoized data fetching
   useEffect(() => {
     dispatch(homeAction(locale));
     dispatch(productAction(locale));
+    getCart();
   }, [locale, dispatch]);
 
   // Optimized data processing

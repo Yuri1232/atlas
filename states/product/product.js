@@ -7,7 +7,7 @@ export const productAction = createAsyncThunk(
   "product/productAction",
   async (locale) => {
     const result = await axios.get(
-      `${process.env.EXPO_PUBLIC_API}/products?locale=${locale}&populate=deep`,
+      `${process.env.EXPO_PUBLIC_API}/products?locale=${locale}&populate=*`,
       {
         headers: { Authorization: ` bearer ${process.env.EXPO_PUBLIC_TOKEN}` },
       }

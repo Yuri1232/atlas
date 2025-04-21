@@ -276,7 +276,8 @@ const ProductDetail = () => {
         ([key, value]) => !value || item?.attributes?.features[key] === value
       )
     );
-    setAvai(avail);
+    console.log("avail", avail);
+
     setAvailStorage([
       ...new Set(avail.map((item) => item?.attributes.features?.storage)),
     ]);
@@ -292,13 +293,13 @@ const ProductDetail = () => {
     return avail;
   };
 
+  console.log("selected", selectedData);
   useEffect(() => {
     if (stream) {
       const baseData = stream.map((item) => item?.attributes);
+      console.log("baseData", baseData);
       if (baseData) {
         const selected = filterItems(stream, { color, ram, storage });
-        console.log("selected", stream);
-
         if (color && ram && storage) {
           setSelectedDataAnimate(selected?.[0]);
         } else {
@@ -343,6 +344,55 @@ const ProductDetail = () => {
     }
     return isRTL ? "أضف إلى السلة" : "Add to Cart";
   }, [isRTL, availQuality]);
+
+  const handleColorSelect = (color: string) => {
+    setSelectedColor(color);
+    setSelected([color, selected[1], selected[2]]);
+  };
+
+  const handleStorageSelect = (storage: string) => {
+    setSelectedStorage(storage);
+    setSelected([selected[0], storage, selected[2]]);
+  };
+
+  const handleRamSelect = (ram: string) => {
+    setSelectedRam(ram);
+    setSelected([selected[0], selected[1], ram]);
+  };
+
+  const handleAddToCart = async () => {
+    if (!user) {
+      router.push("/verification");
+      return;
+    }
+
+    const avail = data?.data?.attributes?.variants?.data?.find(
+      (item: any) =>
+        item.attributes.color === selected[0] &&
+        item.attributes.storage === selected[1] &&
+        item.attributes.ram === selected[2]
+    );
+
+    if (!avail) {
+      Alert.alert("Error", "Please select all options");
+      return;
+    }
+
+    const baseData = {
+      ...data?.data?.attributes,
+      ...avail.attributes,
+      id: avail.id,
+      slug: data?.data?.attributes?.slug,
+    };
+
+    const cartItem = {
+      ...baseData,
+      quantity: 1,
+    };
+
+    dispatch(addToCart(cartItem));
+    router.push("/cart");
+  };
 
   return (
     <Animated.View style={{ flex: 1, backgroundColor: "#F8FAFC" }}>

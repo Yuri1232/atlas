@@ -8,7 +8,13 @@ import {
   resetUserState,
   uploadImage,
 } from "@/states/user/user";
-import { CartActions } from "@/states/user/cart";
+import {
+  CartGetAction,
+  CartPostActions,
+  CartUpdateQuantityAction,
+  CartDeleteItemAction,
+} from "@/states/user/cart";
+import { postAddress } from "@/states/user/address";
 
 export interface UserData {
   full_name: string;
@@ -79,13 +85,54 @@ export const useUser = () => {
 
   const postCart = async (data: any) => {
     try {
-      await dispatch(CartActions(data)).unwrap();
+      await dispatch(CartPostActions(data)).unwrap();
     } catch (error) {
       console.log("error", error);
       return false;
     }
   };
 
+  const getCart = async () => {
+    try {
+      await dispatch(CartGetAction()).unwrap();
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+
+  const updateCartQuantity = async (
+    cartItemId: string | number,
+    quantity: number
+  ) => {
+    try {
+      await dispatch(
+        CartUpdateQuantityAction({ cartItemId, quantity })
+      ).unwrap();
+      await getCart();
+      return true;
+    } catch (error) {
+      console.log("error updating cart quantity", error);
+      return false;
+    }
+  };
+
+  const deleteCartItem = async (cartItemId: string | number) => {
+    try {
+      await dispatch(CartDeleteItemAction(cartItemId)).unwrap();
+      await getCart(); // Refresh cart after deletion
+      return true;
+    } catch (error) {
+      console.log("error deleting cart item", error);
+      return false;
+    }
+  };
+  const postUserAddress = async (data: any) => {
+    try {
+      await dispatch(postAddress(data)).unwrap();
+    } catch (error) {
+      console.log("error posting address", error);
+    }
+  };
   return {
     user: data,
     loading,
@@ -101,5 +148,9 @@ export const useUser = () => {
     modifyUser,
     resetUser,
     postCart,
+    getCart,
+    updateCartQuantity,
+    deleteCartItem,
+    postUserAddress,
   };
 };

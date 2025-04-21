@@ -152,6 +152,7 @@ const Card: React.FC<CardProps> = ({
   index,
   id,
   count,
+  cartId,
 }) => {
   const numericValue = price?.replace(/[^\d.,]/g, "");
   const currencySign = price?.replace(/[\d.,]/g, "").trim();
@@ -230,7 +231,7 @@ const Card: React.FC<CardProps> = ({
         </View>
 
         <BottomRow>
-          <Quantity quantity={quantity} slug={index} />
+          <Quantity quantity={quantity} slug={index} cartId={cartId} />
           <DeleteButton onPress={() => onPressHandler(index)}>
             <Trash2 size={20} color="#212529" />
           </DeleteButton>

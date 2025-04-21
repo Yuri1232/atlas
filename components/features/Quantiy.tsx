@@ -14,6 +14,9 @@ import SpecsTitle from "./SpecsTitle";
 import { ThemedText } from "../ThemedText";
 import AlertMessage from "./Alert";
 import { useAuthCheck } from "@/hooks/useAuthCheck";
+import { useUser } from "@/hooks/useUser";
+import user, { postUser } from "@/states/user/user";
+import { setCountQuantity } from "@/states/ui";
 
 const Wrapper = styled(MotiView)`
   justify-content: space-between;
@@ -64,45 +67,63 @@ const QuantityText = styled(ThemedText)`
   text-align: center;
 `;
 
-const Quantity = ({ isRTL, quantity, product, slug }) => {
+const Quantity = ({ isRTL, quantity, product, slug, cartId }) => {
+  const { updateCartQuantity } = useUser();
   const dispatch = useDispatch();
-  const { data } = useSelector((state) => state.cart) || { data: [] };
+  const { cart: data } = useSelector((state) => state.userCart) || { data: [] };
   const { checkAuth } = useAuthCheck();
 
   // Extract slug from the product
   const slugs = product?.slug ?? slug;
 
   // Find item in cart
-  const cartItem = data.find((item) => item.slug === slugs);
+  const cartItem = data.data.find((item) => item.id === cartId);
 
   // If the item is in the cart, use its quantity; otherwise, start from 1
-  const [count, setCount] = useState(cartItem ? cartItem.quantity : 1);
+  const [count, setCount] = useState(
+    cartItem ? cartItem?.attributes.quantity : 1
+  );
 
   useEffect(() => {
     // Update count if cartItem changes (e.g., from another component)
     if (cartItem) {
-      setCount(cartItem.quantity);
+      setCount(cartItem?.attributes.quantity);
     }
   }, [cartItem]);
 
   const handleIncrease = () => {
     if (count < quantity) {
-      if (cartItem) {
-        dispatch(increaseQuantity(slugs));
+      if (cartItem && checkAuth()) {
+        updateCartQuantity(cartId, count + 1);
+        dispatch(increaseQuantity(cartId));
       } else {
         // ✅ Pass full product details when adding to the cart
-        dispatch(addToCart({ product, quantity: 1 })); // Ensure all product details are passed
+        postUser({
+          userId: user?.id,
+          product: product?.id,
+          quantity: 1,
+        });
       }
       setCount((prev) => prev + 1);
+      dispatch(setCountQuantity(count + 1));
     }
   };
 
   const handleDecrease = () => {
     if (count > 1) {
       if (cartItem) {
-        dispatch(decreaseQuantity(slugs));
+        updateCartQuantity(cartId, count - 1);
+        dispatch(decreaseQuantity(cartId));
       }
       setCount((prev) => prev - 1);
+      dispatch(setCountQuantity(count - 1));
+    }
+  };
+
+  const handleQuantityChange = (newQuantity: number) => {
+    if (newQuantity >= 1) {
+      setCount(newQuantity);
+      dispatch(setCountQuantity(newQuantity));
     }
   };
 

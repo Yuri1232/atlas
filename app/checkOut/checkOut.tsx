@@ -279,7 +279,7 @@ const CheckOut = () => {
   useEffect(() => {
     // If no address is selected, redirect to address selection
     if (!selectedAddress) {
-      router.replace("/modal/address-list?fromCheckout=true&step=1");
+      router?.replace("/modal/address-list?fromCheckout=true&step=1");
     }
   }, [selectedAddress]);
 
@@ -296,7 +296,7 @@ const CheckOut = () => {
 
   const calculateTotals = () => {
     const subtotal = cartItems.reduce((acc, item) => {
-      const price = parseFloat(item.price.replace(/[^\d.]/g, ""));
+      const price = parseFloat(item.price?.replace(/[^\d.]/g, ""));
       return acc + price * item.quantity;
     }, 0);
 
@@ -532,11 +532,11 @@ const CheckOut = () => {
 
       // Use a simple string replacement to make the HTML content URL-safe
       const safeHtml = htmlContent
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        ?.replace(/&/g, "&amp;")
+        ?.replace(/</g, "&lt;")
+        ?.replace(/>/g, "&gt;")
+        ?.replace(/"/g, "&quot;")
+        ?.replace(/'/g, "&#039;");
 
       // Navigate to payment with receipt data
       router.push({

@@ -29,7 +29,6 @@ const VolumeStorage = ({ data, availablity, defaultStorage }) => {
       setSelectedColor(defaultStorage);
       dispatch(storageSetter(defaultStorage));
     }, 300);
-    console.log("storage render");
 
     return () => {
       clearImmediate(timmer);
@@ -67,6 +66,11 @@ const VolumeStorage = ({ data, availablity, defaultStorage }) => {
     setUnavail(unavailableItems);
   }, [data, availablity]);
 
+  const handleStorageSelect = (storage: string) => {
+    setSelectedColor(storage);
+    handleSelect(storage);
+  };
+
   return (
     <View style={{ gap: 2 }}>
       {data && <SpecsTitle>{isRTL ? "تخزين" : "storage"}</SpecsTitle>}
@@ -79,7 +83,7 @@ const VolumeStorage = ({ data, availablity, defaultStorage }) => {
           <RenderFeature
             item={item}
             index={index}
-            handleSelect={handleSelect}
+            handleSelect={handleStorageSelect}
             onSelect={selectedColor}
             isColor={false}
             paint={{ backgroundColor: Colors.light.lightGray }}

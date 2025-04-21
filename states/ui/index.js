@@ -10,6 +10,8 @@ const uiSlider = createSlice({
     ram: null,
     storage: null,
     opacity: 0,
+    count: 1,
+    cartIdAvailable: false,
   },
   reducers: {
     // reducers
@@ -32,6 +34,12 @@ const uiSlider = createSlice({
     opacitySetters: (state, action) => {
       state.opacity = action.payload;
     },
+    setCountQuantity: (state, action) => {
+      state.count = action.payload;
+    },
+    cartIdAvailableSetter: (state, action) => {
+      state.cartIdAvailable = action.payload;
+    },
   },
 });
 
@@ -42,4 +50,6 @@ export const { colorSetter } = actions;
 export const { ramSetter } = actions;
 export const { storageSetter } = actions;
 export const { opacitySetters } = actions;
+export const { setCountQuantity } = actions;
+export const { cartIdAvailableSetter } = actions;
 export default reducer;
