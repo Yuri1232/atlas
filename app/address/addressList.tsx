@@ -27,6 +27,7 @@ import {
 } from "../../states/address/selectors";
 import type { Address } from "../../states/address/types";
 import { router } from "expo-router";
+import { useUser } from "@/hooks/useUser";
 
 interface AddressListProps {
   fromCheckout?: boolean;
@@ -171,9 +172,11 @@ const EditButton = styled(TouchableOpacity)`
 `;
 
 const AddressList: React.FC<AddressListProps> = ({ fromCheckout }) => {
+  const { userAddress } = useUser();
   const dispatch = useDispatch();
-  const addresses = useSelector(selectAddresses);
+  const addresses = userAddress;
   const selectedAddressId = useSelector(selectSelectedAddressId);
+  console.log("liove", addresses);
 
   const handleAddAddress = () => {
     router.push({
@@ -309,7 +312,7 @@ const AddressList: React.FC<AddressListProps> = ({ fromCheckout }) => {
         <StyledText
           style={{ color: "#0066FF", fontSize: 16, fontFamily: "Medium" }}
         >
-          إضافة عنوان جديد
+          إضافةSAsSs عنوان جديد
         </StyledText>
       </AddButton>
 

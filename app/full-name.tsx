@@ -20,6 +20,7 @@ import { Loader } from "lucide-react-native";
 
 const FullNameScreen = () => {
   const { createUser, modifyUser, user, getUser } = useUser();
+  const { slug } = user.data.attributes;
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [fullName, setFullName] = useState("");
@@ -75,17 +76,23 @@ const FullNameScreen = () => {
       showAlert("خطأ", "الرجاء إدخال الاسم الكامل", "error");
       return;
     } else {
-      if (!user) {
-        createUser({ data: { slug: currentUser?.uid, full_name: fullName } });
+      if (!slug) {
+        createUser({
+          data: {
+            slug: currentUser?.uid,
+            full_name: fullName,
+            phone_number: currentUser?.phoneNumber,
+          },
+        });
         router.push({
           pathname: "/address",
           params: { fullName },
         });
       } else {
         try {
-          modifyUser(user?.slug, { data: { full_name: fullName } });
+          modifyUser(slug, { data: { full_name: fullName } });
           router.push({
-            pathname: "/address",
+            pathname: "/(tabs)/booking",
           });
         } catch (error) {
           return error;

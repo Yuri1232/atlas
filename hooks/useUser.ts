@@ -14,7 +14,7 @@ import {
   CartUpdateQuantityAction,
   CartDeleteItemAction,
 } from "@/states/user/cart";
-import { postAddress } from "@/states/user/address";
+import { getAddress, postAddress } from "@/states/user/address";
 
 export interface UserData {
   full_name: string;
@@ -37,6 +37,10 @@ export const useUser = () => {
     uploadError,
     uploadedImageUrl,
   } = useSelector((state: RootState) => state.user);
+
+  const { data: userAddress } = useSelector(
+    (state: RootState) => state.userAddress
+  );
 
   const getUser = async (userId: string) => {
     try {
@@ -133,6 +137,14 @@ export const useUser = () => {
       console.log("error posting address", error);
     }
   };
+
+  const getUserAddress = async () => {
+    try {
+      await dispatch(getAddress()).unwrap();
+    } catch (error) {
+      console.log("error posting address", error);
+    }
+  };
   return {
     user: data,
     loading,
@@ -152,5 +164,7 @@ export const useUser = () => {
     updateCartQuantity,
     deleteCartItem,
     postUserAddress,
+    getUserAddress,
+    userAddress,
   };
 };

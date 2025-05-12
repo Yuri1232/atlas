@@ -261,9 +261,9 @@ const ProductDetail = () => {
       }, []);
       setImage(imageURL);
 
-      const color = stream.map((item) => item.attributes.features.color);
-      const ram = stream.map((item) => item.attributes.features.ram);
-      const storage = stream.map((item) => item.attributes.features.storage);
+      const color = stream.map((item) => item.attributes.features?.color);
+      const ram = stream.map((item) => item.attributes.features?.ram);
+      const storage = stream.map((item) => item.attributes.features?.storage);
       setAllColor(color);
       setAllRam(ram);
       setAllStorage(storage);
@@ -368,9 +368,9 @@ const ProductDetail = () => {
 
     const avail = data?.data?.attributes?.variants?.data?.find(
       (item: any) =>
-        item.attributes.color === selected[0] &&
-        item.attributes.storage === selected[1] &&
-        item.attributes.ram === selected[2]
+        item.attributes?.color === selected[0] &&
+        item.attributes?.storage === selected[1] &&
+        item.attributes?.ram === selected[2]
     );
 
     if (!avail) {

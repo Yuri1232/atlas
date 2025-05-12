@@ -20,6 +20,8 @@ import { useDispatch } from "react-redux";
 
 const AddressScreen = () => {
   const { postUserAddress, user } = useUser();
+  const { id } = user.data;
+  console.log(id);
   const router = useRouter();
   const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
@@ -50,7 +52,6 @@ const AddressScreen = () => {
       }),
     ]).start();
   }, []);
-  console.log(user);
 
   const translateY = slideAnim.interpolate({
     inputRange: [0, 1],
@@ -79,8 +80,9 @@ const AddressScreen = () => {
       showAlert("خطأ", "الرجاء إدخال المدينة", "error");
       return;
     }
+
     const information = {
-      data: { home_address: address, city: city, customer: user.id },
+      data: { home_address: address, city: city, customer: id },
     };
     postUserAddress(information);
     router.push({

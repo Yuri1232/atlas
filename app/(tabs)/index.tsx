@@ -229,6 +229,7 @@ const MemoizedSearch = memo(({ onPress }: { onPress: () => void }) => (
 ));
 
 // Memoized Swiper Component
+
 const MemoizedSwiper = memo(
   ({ data, status }: { data: any; status: string }) => (
     <SwiperContainer>

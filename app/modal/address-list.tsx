@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   TouchableOpacity,
@@ -28,6 +28,8 @@ import {
 import type { Address } from "../../states/address/types";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useUser } from "@/hooks/useUser";
+import auth from "@react-native-firebase/auth";
 
 const SafeContainer = styled(SafeAreaView)`
   flex: 1;
@@ -224,12 +226,22 @@ const ProgressLabel = styled(Text)<{ isActive: boolean }>`
 
 const AddressList = () => {
   const dispatch = useDispatch();
-  const addresses = useSelector(selectAddresses);
+  const currentUser = auth().currentUser;
+
   const selectedAddressId = useSelector(selectSelectedAddressId);
   const params = useLocalSearchParams();
+  const { getUserAddress, userAddress } = useUser();
+  const addresses = userAddress?.data?.filter(
+    (address) =>
+      address?.attributes.customer?.data?.attributes.slug === currentUser?.uid
+  );
+
+  console.log(userAddress);
   const fromCheckout = params.fromCheckout === "true";
   const currentStep = Number(params.step) || 1;
-
+  useEffect(() => {
+    getUserAddress();
+  }, []);
   const handleAddAddress = () => {
     router.push({
       pathname: "/modal/add-address",
@@ -278,7 +290,7 @@ const AddressList = () => {
     }
   };
 
-  if (addresses.length === 0) {
+  if (addresses?.length === 0) {
     return (
       <SafeContainer>
         {fromCheckout && (
@@ -440,19 +452,15 @@ const AddressList = () => {
         <MapPin size={24} color="#212529" />
       </Header>
 
-      {addresses.map((address) => (
+      {addresses?.map((address) => (
         <AddressCard
           key={address.id}
           isSelected={address.id === selectedAddressId}
           onPress={() => handleAddressSelect(address)}
         >
           <AddressInfo>
-            <AddressName>{address.name}</AddressName>
-            <AddressText>{address.street}</AddressText>
-            <AddressText>
-              {address.city}, {address.state}
-            </AddressText>
-            <AddressText>{address.country}</AddressText>
+            <AddressText>{address.attributes.home_address}</AddressText>
+            <AddressText>{address.attributes.city}</AddressText>
           </AddressInfo>
           {address.id === selectedAddressId && (
             <Check size={20} color="#0066FF" style={{ marginTop: 4 }} />

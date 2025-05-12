@@ -142,7 +142,8 @@ interface AddressScreenProps {
 }
 
 const AddressScreen: React.FC<AddressScreenProps> = ({ route }) => {
-  const { user } = useUser();
+  const { user, postUserAddress } = useUser();
+  const { id } = user.data;
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -150,41 +151,30 @@ const AddressScreen: React.FC<AddressScreenProps> = ({ route }) => {
   const editAddress = route?.params?.address;
 
   const [formData, setFormData] = useState({
-    fullName: editAddress?.fullName || "",
-    streetAddress: editAddress?.streetAddress || "",
-    apartment: editAddress?.apartment || "",
-    city: editAddress?.city || "",
-    state: editAddress?.state || "",
-    zipCode: editAddress?.zipCode || "",
-    country: editAddress?.country || "",
-    phone: editAddress?.phone || "",
+    home_address: "",
+    city: "",
+    phone_number: "",
   });
+
+  console.log(formData, id);
 
   const [errors, setErrors] = useState<FormErrors>({});
 
   const validateForm = () => {
     const newErrors: FormErrors = {};
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "الاسم الكامل مطلوب";
-    }
-
-    if (!formData.streetAddress.trim()) {
-      newErrors.streetAddress = "عنوان الشارع مطلوب";
+    if (!formData.home_address.trim()) {
+      newErrors.home_address = "عنوان الشارع مطلوب";
     }
 
     if (!formData.city.trim()) {
       newErrors.city = "المدينة مطلوبة";
     }
 
-    if (!formData.country.trim()) {
-      newErrors.country = "البلد مطلوب";
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = "رقم الهاتف مطلوب";
-    } else if (!/^\+?[\d\s-]{8,}$/.test(formData.phone.trim())) {
-      newErrors.phone = "رقم الهاتف غير صالح";
+    if (!formData.phone_number.trim()) {
+      newErrors.phone_number = "رقم الهاتف مطلوب";
+    } else if (!/^\+?[\d\s-]{8,}$/.test(formData.phone_number.trim())) {
+      newErrors.phone_number = "رقم الهاتف غير صالح";
     }
 
     setErrors(newErrors);
@@ -193,20 +183,27 @@ const AddressScreen: React.FC<AddressScreenProps> = ({ route }) => {
 
   const handleSave = () => {
     if (validateForm()) {
-      try {
-        if (editAddress) {
-          dispatch(updateAddress({ ...formData, id: editAddress.id }));
-        } else {
-          dispatch(addAddress(formData));
-        }
-        navigation.goBack();
-      } catch (error) {
-        Alert.alert(
-          "خطأ",
-          "حدث خطأ أثناء حفظ العنوان. يرجى المحاولة مرة أخرى.",
-          [{ text: "حسناً" }]
-        );
-      }
+      // try {
+      // if (!editAddress) {
+      //   dispatch(updateAddress({ ...formData, id: editAddress.id }));
+      // } else {
+      postUserAddress({
+        data: {
+          city: formData.city,
+          home_address: formData.home_address,
+          phone_number: formData.phone_number,
+          customer: id,
+        },
+      });
+      //   }
+      navigation.goBack();
+      // } catch (error) {
+      //   Alert.alert(
+      //     "خطأ",
+      //     "حدث خطأ أثناء حفظ العنوان. يرجى المحاولة مرة أخرى.",
+      //     [{ text: "حسناً" }]
+      //   );
+      // }
     }
   };
 
@@ -231,29 +228,14 @@ const AddressScreen: React.FC<AddressScreenProps> = ({ route }) => {
         </Header>
         <FormContainer>
           <FormSection>
-            <InputLabel>الاسم الكامل</InputLabel>
-            <StyledInput
-              placeholder="أدخل اسمك الكامل"
-              value={user?.full_name}
-              editable={false}
-              onChangeText={(text) => {
-                setFormData({ ...formData, fullName: text });
-                if (errors.fullName) {
-                  setErrors({ ...errors, fullName: "" });
-                }
-              }}
-              placeholderTextColor="#ADB5BD"
-            />
-            {errors.fullName && <ErrorText>{errors.fullName}</ErrorText>}
-
             <InputLabel>عنوان الشارع</InputLabel>
             <StyledInput
               placeholder="أدخل عنوان الشارع"
-              value={formData.streetAddress}
+              value={formData.home_address}
               onChangeText={(text) => {
-                setFormData({ ...formData, streetAddress: text });
+                setFormData({ ...formData, home_address: text });
                 if (errors.streetAddress) {
-                  setErrors({ ...errors, streetAddress: "" });
+                  setErrors({ ...errors, home_address: "" });
                 }
               }}
               placeholderTextColor="#ADB5BD"
@@ -261,16 +243,6 @@ const AddressScreen: React.FC<AddressScreenProps> = ({ route }) => {
             {errors.streetAddress && (
               <ErrorText>{errors.streetAddress}</ErrorText>
             )}
-
-            <InputLabel>الشقة، الجناح، الوحدة (اختياري)</InputLabel>
-            <StyledInput
-              placeholder="رقم الشقة أو الوحدة"
-              value={formData.apartment}
-              onChangeText={(text) =>
-                setFormData({ ...formData, apartment: text })
-              }
-              placeholderTextColor="#ADB5BD"
-            />
 
             <Row>
               <HalfWidth>
@@ -288,43 +260,16 @@ const AddressScreen: React.FC<AddressScreenProps> = ({ route }) => {
                 />
                 {errors.city && <ErrorText>{errors.city}</ErrorText>}
               </HalfWidth>
-              <HalfWidth>
-                <InputLabel>المنطقة</InputLabel>
-                <StyledInput
-                  placeholder="المنطقة"
-                  defaultValue={user?.address}
-                  onChangeText={(text) =>
-                    setFormData({ ...formData, state: text })
-                  }
-                  placeholderTextColor="#ADB5BD"
-                />
-              </HalfWidth>
-            </Row>
-
-            <Row>
-              <HalfWidth>
-                <InputLabel>الرمز البريدي (اختياري)</InputLabel>
-                <StyledInput
-                  placeholder="الرمز البريدي"
-                  value={formData.zipCode}
-                  onChangeText={(text) =>
-                    setFormData({ ...formData, zipCode: text })
-                  }
-                  keyboardType="numeric"
-                  placeholderTextColor="#ADB5BD"
-                />
-              </HalfWidth>
             </Row>
 
             <InputLabel>رقم الهاتف</InputLabel>
             <StyledInput
               placeholder="رقم الهاتف"
               value={user?.phone_number}
-              editable={false}
               onChangeText={(text) => {
-                setFormData({ ...formData, phone: text });
-                if (errors.phone) {
-                  setErrors({ ...errors, phone: "" });
+                setFormData({ ...formData, phone_number: text });
+                if (errors.phone_number) {
+                  setErrors({ ...errors, phone_number: "" });
                 }
               }}
               keyboardType="phone-pad"

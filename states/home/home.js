@@ -7,7 +7,7 @@ export const homeAction = createAsyncThunk(
   async (locale, { rejectWithValue }) => {
     try {
       const result = await axios.get(
-        `${process.env.EXPO_PUBLIC_API}/home?locale=${locale}&populate[0]=slider&populate[1]=card.logo&populate[2]=social_media&populate[3]=contacts&populate[4]=map&populate[5]=navbar.dropdown`,
+        `${process.env.EXPO_PUBLIC_API}/home?locale=ar&populate[0]=slider&populate[1]=card.logo&populate[2]=social_media&populate[3]=contacts&populate[4]=map&populate[5]=navbar.dropdown`,
         {
           headers: {
             Authorization: ` bearer ${process.env.EXPO_PUBLIC_TOKEN}`,

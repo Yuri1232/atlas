@@ -40,10 +40,12 @@ export default function Profile() {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(0));
   const { getUser } = useUser();
-  const { data: userData } = useSelector((state: RootState) => state.user);
+  const { data: userD } = useSelector((state: RootState) => state.user);
   const [localProfileImage, setLocalProfileImage] = useState<string | null>(
     null
   );
+
+  const { full_name, image } = userD.data.attributes;
 
   useFocusEffect(
     React.useCallback(() => {
@@ -181,10 +183,10 @@ export default function Profile() {
                   source={{ uri: localProfileImage }}
                   style={styles.profileImage}
                 />
-              ) : userData?.image?.url ? (
+              ) : image?.url ? (
                 <Image
                   source={{
-                    uri: process.env.EXPO_PUBLIC_BASE + userData.image.url,
+                    uri: process.env.EXPO_PUBLIC_BASE + image.url,
                   }}
                   style={styles.profileImage}
                 />
@@ -203,7 +205,7 @@ export default function Profile() {
                 <Ionicons name="camera-outline" size={20} color="#fff" />
               </View>
             </TouchableOpacity>
-            <Text style={styles.name}>{userData?.full_name ?? "—"}</Text>
+            <Text style={styles.name}>{full_name ?? "—"}</Text>
             <Text style={styles.phone}>{currentUser?.phoneNumber}</Text>
             <View style={styles.verifiedBadge}>
               <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />

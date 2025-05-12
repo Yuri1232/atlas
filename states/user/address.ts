@@ -16,6 +16,18 @@ export const postAddress = createAsyncThunk(
     return response?.data;
   }
 );
+
+export const getAddress = createAsyncThunk("address/getAddresss", async () => {
+  const response = await axios.get(
+    `${process.env.EXPO_PUBLIC_API}/addresses?populate=*`,
+    {
+      headers: {
+        Authorization: `bearer ${process.env.EXPO_PUBLIC_TOKEN}`,
+      },
+    }
+  );
+  return response?.data;
+});
 const initialState = {
   data: null,
   loading: false,
@@ -42,19 +54,19 @@ const userAddress = createSlice({
       //     state.uploadError = action.payload as string;
       //   })
       //   // Get user cases
-      //   .addCase(getCustomer.pending, (state) => {
-      //     state.loading = true;
-      //     state.error = null;
-      //   })
-      //   .addCase(getCustomer.fulfilled, (state, action) => {
-      //     state.loading = false;
-      //     state.data = action.payload;
-      //     state.error = null;
-      //   })
-      //   .addCase(getCustomer.rejected, (state, action) => {
-      //     state.loading = false;
-      //     state.error = action.payload as string;
-      //   })
+      .addCase(getAddress.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAddress.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
+        state.error = null;
+      })
+      .addCase(getAddress.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
       //   // Post user cases
       //   .addCase(postUser.pending, (state) => {
       //     state.loading = true;
